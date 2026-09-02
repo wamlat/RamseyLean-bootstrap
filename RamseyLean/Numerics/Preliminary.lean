@@ -124,7 +124,7 @@ theorem uniformRamseyExpBound_preliminary :
   · intro r hr
     exact preliminaryY_mem_Ioo hr
   · intro r _hr
-    exact preliminaryX_eq_descent r
+    exact (preliminaryX_eq_descent r).le
   · intro r hr
     exact preliminary_pair_mem_asymptoticRegion hr
   · intro r hr

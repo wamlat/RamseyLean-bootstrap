@@ -46,7 +46,7 @@ theorem uniformRamseyExpBound_final :
       (final_descent_of_certificate uniformRamseyExpBound_preliminary
         FinalCertificate.finalNumericalCertificate hr).1
   · intro r _hr
-    exact finalX_eq_descent r
+    exact (finalX_eq_descent r).le
   · intro r hr
     exact
       (final_descent_of_certificate uniformRamseyExpBound_preliminary

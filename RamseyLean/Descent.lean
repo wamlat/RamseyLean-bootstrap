@@ -607,7 +607,7 @@ private theorem exists_denseCaseAnchor
     (hD : ContinuousWithinAt D (Icc ρ 1) c)
     (hDpos : 0 < D c) (hM : M c ∈ Ioo (0 : ℝ) 1)
     (hX : X c ∈ Ioo (0 : ℝ) 1) (hY : Y c ∈ Ioo (0 : ℝ) 1)
-    (hXeq : X c =
+    (hXle : X c ≤
       (1 - Real.exp (-D c)) ^ (1 / (1 - M c)) * (1 - M c))
     (hregion : (X c, Y c) ∈ asymptoticRegion)
     (hslack : denseCaseExponent (X c) (M c) (Y c) c < F c) :
@@ -667,7 +667,7 @@ private theorem exists_denseCaseAnchor
   have hxcritical : x < q ^ (1 / (1 - M c)) * (1 - M c) := by
     calc
       x < X c := hxx
-      _ = q ^ (1 / (1 - M c)) * (1 - M c) := by simpa [q] using hXeq
+      _ ≤ q ^ (1 / (1 - M c)) * (1 - M c) := by simpa [q] using hXle
   obtain ⟨p, hp, hxstrict⟩ := exists_density_slack hM hq hxcritical
   have hpunit : p ∈ Ioo (0 : ℝ) 1 := ⟨hp.1, hp.2.trans hq.2⟩
   have hqcont : Continuous (fun d : ℝ => 1 - Real.exp (-D c + d)) := by
@@ -740,8 +740,8 @@ theorem dense_case_uniform
     (hM : ∀ r ∈ Icc ρ 1, M r ∈ Ioo (0 : ℝ) 1)
     (hX : ∀ r ∈ Icc ρ 1, X r ∈ Ioo (0 : ℝ) 1)
     (hY : ∀ r ∈ Icc ρ 1, Y r ∈ Ioo (0 : ℝ) 1)
-    (hXeq : ∀ r ∈ Icc ρ 1,
-      X r = (1 - Real.exp (-D r)) ^ (1 / (1 - M r)) * (1 - M r))
+    (hXle : ∀ r ∈ Icc ρ 1,
+      X r ≤ (1 - Real.exp (-D r)) ^ (1 / (1 - M r)) * (1 - M r))
     (hregion : ∀ r ∈ Icc ρ 1, (X r, Y r) ∈ asymptoticRegion)
     (hslack : ∀ r ∈ Icc ρ 1,
       denseCaseExponent (X r) (M r) (Y r) r < F r) :
@@ -761,7 +761,7 @@ theorem dense_case_uniform
     intro c
     exact exists_denseCaseAnchor hε c.2 (hF c.1 c.2) (hD c.1 c.2)
       (hDpos c.1 c.2) (hM c.1 c.2) (hX c.1 c.2) (hY c.1 c.2)
-      (hXeq c.1 c.2) (hregion c.1 c.2) (hslack c.1 c.2)
+      (hXle c.1 c.2) (hregion c.1 c.2) (hslack c.1 c.2)
   choose A hApatch using hlocal
   obtain ⟨t, htcover⟩ := isCompact_Icc.elim_nhdsWithin_subcover'
     (fun c hc => (A ⟨c, hc⟩).patch)
@@ -835,7 +835,9 @@ theorem dense_case_uniform
 conditions gives a uniform exponential Ramsey bound.
 
 The formal statement represents `F'` by an explicit function `D` together
-with pointwise `HasDerivAt` proofs and continuity on `(0,1]`.  It retains the
+with pointwise `HasDerivAt` proofs and continuity on `(0,1]`.  The identity
+defining `X` in the paper is relaxed to an inequality `X ≤ …`; the proof only
+ever uses the inequality (see `hxcritical` in `exists_denseCaseAnchor`).  It retains the
 agreed continuity hypothesis on `M`; the frozen-parameter proof of
 `dense_case_uniform` is stronger and does not itself need that hypothesis. -/
 theorem uniformRamseyExpBound_of_descent
@@ -848,8 +850,8 @@ theorem uniformRamseyExpBound_of_descent
     (hM : ∀ r ∈ Ioc (0 : ℝ) 1, M r ∈ Ioo (0 : ℝ) 1)
     (hX : ∀ r ∈ Ioc (0 : ℝ) 1, X r ∈ Ioo (0 : ℝ) 1)
     (hY : ∀ r ∈ Ioc (0 : ℝ) 1, Y r ∈ Ioo (0 : ℝ) 1)
-    (hXeq : ∀ r ∈ Ioc (0 : ℝ) 1,
-      X r = (1 - Real.exp (-D r)) ^ (1 / (1 - M r)) * (1 - M r))
+    (hXle : ∀ r ∈ Ioc (0 : ℝ) 1,
+      X r ≤ (1 - Real.exp (-D r)) ^ (1 / (1 - M r)) * (1 - M r))
     (hregion : ∀ r ∈ Ioc (0 : ℝ) 1, (X r, Y r) ∈ asymptoticRegion)
     (hslack : ∀ r ∈ Ioc (0 : ℝ) 1,
       denseCaseExponent (X r) (M r) (Y r) r < F r) :
@@ -873,7 +875,7 @@ theorem uniformRamseyExpBound_of_descent
     (fun r hr => hM r (hcompactSub hr))
     (fun r hr => hX r (hcompactSub hr))
     (fun r hr => hY r (hcompactSub hr))
-    (fun r hr => hXeq r (hcompactSub hr))
+    (fun r hr => hXle r (hcompactSub hr))
     (fun r hr => hregion r (hcompactSub hr))
     (fun r hr => hslack r (hcompactSub hr))
   obtain ⟨Kstep, hstep⟩ := exists_descent_floor_step
