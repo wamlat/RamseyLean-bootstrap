@@ -17,20 +17,28 @@ Goal per cell `L = [lo, hi] ⊆ (0, 1]` with witness `u₀ ∈ (0, 1]`:
 Let `x := log (X r)`. Given `TangentUB` (`F s ≤ F u + (s-u)·D u` for `s,u ∈ (0,1]`)
 and `MonoUB` (`F s ≤ F 1`), set `Y := exp (-S̄)` where
 
+Let `xU ≥ sup_L x` (interval upper bound of `log X` over `L`).
+
 - **case A** (paper witness `t₀ = 1/u₀ ≥ 1`): `S̄ := Sbar(u₀)`.
-  Conditions:  (a) `D(u₀) + x ≤ 0`;  (b) `S̄ + x ≤ 0`;  (c) `0 < S̄`;
-  (C2) `F r + (x + r·log M r − r·S̄)/2 > 0`.
-  Then `hadm₁ : F s ≤ −x + s·S̄·(−1)·(−1)`… concretely
-  `F s ≤ F u₀ + (s−u₀) D u₀ = S̄ + s·D u₀ ≤ −x + s·S̄` (linear in `s`, endpoints
-  `s→0` by (b), `s=1` by (a));
-  `hadm₂ : F s ≤ S̄ + s·D u₀ ≤ S̄ − s·x` by (a) plus `x ≤ 0` — note
-  `−log Y = S̄`, `−log X = −x`.
+  Conditions:  (a) `D(u₀) + xU ≤ 0`;  (b) `Sbar(u₀) + xU ≤ 0`;  (c) `0 < S̄`;
+  (C2) `F r + (x + r·log M r − r·S̄)/2 > 0` for all `r ∈ L`.
+  Then `hadm₁ : F s ≤ −x + s·S̄`: by TangentUB
+  `F s ≤ F u₀ + (s−u₀) D u₀ = S̄ + s·D u₀`, and
+  `(−x + s·S̄) − (S̄ + s·D u₀) = (1−s)(−x − S̄) + s(−x − D u₀) ≥ 0` by (a),(b),
+  `0 < s ≤ 1`;
+  `hadm₂ : F s ≤ S̄ + s·D u₀ ≤ S̄ − s·x` by (a) (`D u₀ ≤ −xU ≤ −x`).
   `hY : Y ∈ (0,1)` by (c). `hslack` is (C2) with `log Y = −S̄`.
-- **case B** (paper witness `t₀ = u₀ ≤ 1`, tiny; sup attained at small `t`):
-  `S̄ := D(u₀)`.  Conditions: (b′) `Sbar(u₀) + x ≤ 0`; (c′) `0 < D(u₀)`;
-  (m) `F 1 ≤ D(u₀)`; (C2′) `F r + (x + r·log M r − r·D(u₀))/2 > 0`.
-  Then `hadm₁ : F s ≤ F u₀ + (s−u₀) D u₀ = Sbar(u₀) + s·D(u₀) ≤ −x + s·S̄` by (b′);
-  `hadm₂ : F s ≤ F 1 ≤ S̄ ≤ S̄ − s·x` by MonoUB, (m), `x ≤ 0`.
+- **case B** (paper witness `t₀ = u₀ ≤ 1`; sup attained at `t ≤ 1`):
+  `S̄ := D(u₀)`.  Conditions: (b′) `Sbar(u₀) + xU ≤ 0`; (c′) `0 < D(u₀)`;
+  (n) `Sbar(u₀) ≤ D(u₀)`  [the cross-kink condition, pointwise analogue of the
+  paper's `F(1) ≤ 2F'(1)`; do NOT use `F 1 ≤ D(u₀)` — that fails when the
+  binding ratio `t*` is near `1`];
+  (C2′) `F r + (x + r·log M r − r·D(u₀))/2 > 0` for all `r ∈ L`.
+  Then `hadm₁ : F s ≤ Sbar(u₀) + s·D(u₀) ≤ −x + s·S̄` by TangentUB and (b′);
+  `hadm₂ : F s ≤ S̄ − s·x`: by TangentUB `F s ≤ Sbar(u₀) + s·D(u₀)`;
+  `(D(u₀) + s·Sbar(u₀)) − (Sbar(u₀) + s·D(u₀)) = (1−s)(D(u₀) − Sbar(u₀)) ≥ 0`
+  by (n) and `s ≤ 1`, so `F s ≤ D(u₀) + s·Sbar(u₀)`; finally
+  `Sbar(u₀) ≤ −xU ≤ −x` by (b′), giving `F s ≤ D(u₀) − s·x = S̄ − s·x`.
 
 In both cases we additionally need on all of `L`:
 - `inf_L D > 0`, `sup_L D2 < 0` (goal 1),
