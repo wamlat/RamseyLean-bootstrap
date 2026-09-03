@@ -1,0 +1,492 @@
+\documentclass[11pt]{article}
+\usepackage[margin=1.1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{graphicx,booktabs,hyperref,xcolor,enumitem}
+\usepackage{microtype}
+\hypersetup{colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{claim}[theorem]{Claim}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Ft}{\widetilde F}
+\newcommand{\Gt}{\widetilde G}
+\newcommand{\eR}{e_{\mathrm R}}
+\newcommand{\NR}{N_{\mathrm R}}
+\newcommand{\NB}{N_{\mathrm B}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\lam}{\lambda}
+\DeclareMathOperator{\Ram}{R}
+
+\title{A self-consistent bootstrap for the book algorithm\\ and the bound $\Ram(k,k)\le 3.769^{\,k+o(k)}$}
+\author{\normalsize [author list to be completed]\thanks{Revision v3, 2 September 2026.  The combinatorial core is the book algorithm of Campos, Griffiths, Morris and Sahasrabudhe~\cite{CGMS} in the inductive form of Gupta, Ndiaye, Norin and Wei~\cite{GNNW}; Section~\ref{sec:key} reproves it, with explicit hypotheses, for the reader's convenience.}}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Gupta, Ndiaye, Norin and Wei~\cite{GNNW} recast the Campos--Griffiths--Morris--Sahasrabudhe book algorithm~\cite{CGMS} as an inductive statement, obtaining $\Ram(k,k)\le(3.7992\ldots)^{k+o(k)}$ by two rounds of a bootstrap in which an already established bound on off-diagonal Ramsey numbers enlarges the set of admissible parameters of the next round; they remark that further rounds are possible.  We show that the bound \emph{being proved} may itself be used to define the admissible set, so that the whole (infinite) iteration collapses to the verification of a single system of inequalities.  Optimising within this framework---no longer over a closed-form ansatz but over free-form rate functions, discretised as concave piecewise-quadratic splines---gives
+\[
+\Ram(k,\ell)\le e^{\,F(\ell/k)\,k+o(k)}\qquad(1\le\ell\le k)
+\]
+for an explicit such $F$, presented as an exact-integer certificate of $35\,770$ cells with one tangent witness per cell and orientation, with $e^{F(1)}\le3.7689719$; in particular $\Ram(k,k)\le3.769^{\,k+o(k)}$.  Self-consistency also removes the hand analysis of small ratios: below $\lam_0=10^{-4}$ the certified $F$ is simply extended linearly, at the cost of a single inequality.  The entire proof has been formalised in Lean~4 (Remark~\ref{rem:lean}): the final theorems, including the fully formal decimal bound $\Ram(k,k)\le3.7690^{\,k}$ for all large $k$, depend only on the axioms \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}.  We also describe how the admissible region must be computed in both orientations $\ell\le k$ and $\ell>k$ (the point corrected between the first and second arXiv versions of~\cite{GNNW}), and note that a proposed quintic correction with constant $3.6961$~\cite{HM} does not satisfy the self-consistency inequality.
+\end{abstract}
+
+\section{Introduction}
+
+Let $\Ram(k,\ell)$ be the least $N$ such that every red/blue colouring of the edges of $K_N$ contains a red $K_k$ or a blue $K_\ell$.  Erd\H{o}s and Szekeres~\cite{ES} proved $\Ram(k,\ell)\le\binom{k+\ell-2}{k-1}$, so $\Ram(k,k)\le4^k$.  After decades of lower-order improvements, Campos, Griffiths, Morris and Sahasrabudhe~\cite{CGMS} proved $\Ram(k,k)\le(4-2^{-7})^k$ with their \emph{book algorithm}.  Gupta, Ndiaye, Norin and Wei~\cite{GNNW} replaced the algorithm by an inductive statement, optimised the parameters and obtained, for $\ell\le k$,
+\begin{equation}\label{eq:gnnw}
+\Ram(k,\ell)\le e^{G(\ell/k)k+o(k)}\binom{k+\ell}{\ell},\qquad G(\lam)=(-0.25\lam+0.03\lam^2+0.08\lam^3)e^{-\lam},
+\end{equation}
+which at $\lam=1$ gives $\Ram(k,k)\le(4e^{-0.14/e})^{k+o(k)}=(3.7992027\ldots)^{k+o(k)}$.
+
+Throughout, $H(\lam)=(1+\lam)\log(1+\lam)-\lam\log\lam$ for $\lam>0$, so that $\binom{k+\ell}{\ell}\le e^{H(\ell/k)k}$ is the Erd\H{o}s--Szekeres bound in exponential form.
+
+\begin{theorem}\label{thm:main}
+There is a concave, strictly increasing, piecewise-quadratic $C^1$ function $F\colon(0,1]\to(0,\infty)$, given explicitly by the certificate of Section~\ref{sec:cert} (a spline on a partition of $[\lam_0,1]$, $\lam_0=10^{-4}$, into $10\,560$ intervals, extended linearly on $(0,\lam_0]$), with the following property: for every $\eps>0$ there is $N_\eps$ such that
+\[
+\Ram(k,\ell)\le\exp\bigl((F(\ell/k)+\eps)\,k\bigr)\qquad\text{for all integers }k\ge\ell\ge1\text{ with }k+\ell\ge N_\eps .
+\]
+Its terminal value is the exact rational
+\[
+F(1)=\frac{2653604512524788171208898}{2\cdot10^{24}}=1.32680225\ldots,\qquad e^{F(1)}\le3.7689719<3.769 ;
+\]
+in particular
+\[
+\Ram(k,k)\le 3.769^{\,k+o(k)} .
+\]
+\end{theorem}
+
+\begin{table}[h]\centering\small
+\begin{tabular}{@{}lcccccc@{}}\toprule
+$\lam$ & 0.1 & 0.25 & 0.5 & 0.75 & 0.9 & 1\\ \midrule
+$H(\lam)$ & $0.3351$ & $0.6255$ & $0.9548$ & $1.1951$ & $1.3143$ & $1.3863$\\
+$H(\lam)+G(\lam)$~\cite{GNNW} & $0.3128$ & $0.5793$ & $0.8896$ & $1.1304$ & $1.2565$ & $1.3348$\\
+$F(\lam)$ (Theorem~\ref{thm:main}) & $0.3023$ & $0.5680$ & $0.8823$ & $1.1230$ & $1.2487$ & $1.3268$\\
+\bottomrule
+\end{tabular}
+\caption{Exponents in $\Ram(k,\lam k)\le e^{(\cdot)\,k+o(k)}$.  The values of $F$ are evaluated from the certificate nodes (Section~\ref{sec:spline}).}\label{tab:values}
+\end{table}
+
+The improvement over~\eqref{eq:gnnw} at the diagonal is the factor $(3.76897/3.79920)^k=e^{-0.00799k}$; Table~\ref{tab:values} lists some off-diagonal values.
+
+\subsection*{Context and what is new}
+The proof in~\cite{GNNW} has two parts.  The combinatorial part (their Lemma~12 and Theorem~13) says, roughly, that a candidate pair $(X,Y)$ with red density $\ge p$ and $|X||Y|\ge x^{-k}y^{-\ell}\mu^{-\ell}$ contains one of the desired cliques, provided $x<(1-\mu)p^{1/(1-\mu)}$ and $(x,y)$ is \emph{admissible}, i.e.\ $x^{-k'}y^{-\ell'}$ is (asymptotically) an upper bound for $\Ram(k',\ell')$ for all $k',\ell'$.  The analytic part (their Theorem~14) converts this into a bound $\Ram(k,\ell)\le e^{F(\ell/k)k+o(k)}$ for any smooth $F$ such that, with $p=1-e^{-F'}$ and $X=(1-M)p^{1/(1-M)}$, some admissible $(X(\lam),Y(\lam))$ satisfies
+\begin{equation}\label{eq:mainineq}
+F(\lam)>-\tfrac12\bigl(\log X(\lam)+\lam\log M(\lam)+\lam\log Y(\lam)\bigr)\qquad(0<\lam\le1).
+\end{equation}
+The larger the admissible $Y(\lam)$, the smaller $F$ can be; and the admissible set is enlarged by any already established bound on Ramsey numbers.  In~\cite{GNNW} this is exploited in two rounds: the Erd\H{o}s--Szekeres bound gives a first $F_{0.08}$, which enlarges the admissible set and gives $F_{0.03}$, i.e.\ \eqref{eq:gnnw}.  The authors remark that additional rounds are possible and report that an unverified third round would give $3.78233$~\cite[Remark~17]{GNNW}.
+
+Our contribution is threefold.
+\begin{enumerate}[leftmargin=2em]
+\item \emph{Self-consistency} (Section~\ref{sec:boot}).  We prove that the admissible set may be computed from the very function $F$ one is trying to establish (Theorem~\ref{thm:selfconsistent}).  A direct induction is circular at its base; we resolve this with a \emph{shift ladder}: the functions $F+s$, $s\downarrow0$, are shown valid one after another, each step being an application of the one-round theorem to the previous one.  This replaces the infinite iteration by a single system of inequalities and yields the fixed point of the bootstrap.  The ladder theorem---and, as of this revision, the entire proof of Theorem~\ref{thm:main}---is formalised in Lean~4 on top of the RamseyLean development of~\cite{GNNW} (Remark~\ref{rem:lean}).
+\item \emph{Optimisation and certification} (Section~\ref{sec:cert}).  Instead of optimising within a closed-form ansatz (as the previous revision of this paper did, with a degree-8 correction to the Erd\H{o}s--Szekeres exponent, reaching $3.772$), we compute the fixed point of the bootstrap in a discretisation of the framework: $F$ is a free-form concave piecewise-quadratic spline on a $10\,560$-interval partition of $[\lam_0,1]$, $\lam_0=10^{-4}$, determined interval by interval by the minimal admissible slope, with a per-interval book parameter $M$ and pair $(X,Y)$, admissibility being tested against $F$ itself---self-consistently, and in both orientations.  The maximal admissible $Y$ is controlled by a Legendre-type transform of the symmetric extension of $F$ (Lemma~\ref{lem:legendre}, equivalent to~\cite[Lemma~15]{GNNW}), so that one tangent-line witness per cell and orientation suffices.  The proof object is a certificate of $35\,770$ cells whose entries are exact scaled integers; self-consistency permits a \emph{linear} extension of $F$ below $\lam_0$, in place of the hand analysis of small ratios that a closed-form ansatz requires.  The certificate is verified by a Python checker and, bit-identically, by the Lean kernel.
+\item \emph{Both orientations} (Section~\ref{sec:gap}).  The admissible region must dominate the Ramsey bound at all ratios $\ell/k\in(0,\infty)$; the first arXiv version of~\cite{GNNW} used the bound only for $\ell\le k$, which its second version corrects.  We indicate the precise point, give a numerical witness, and note that the corrected, self-consistent framework confirms the constant $3.7992\ldots$ directly and rules out a proposed quintic with constant $3.6961$~\cite{HM}.
+\end{enumerate}
+
+\section{Notation, valid bounds and admissible pairs}\label{sec:prelim}
+
+All colourings are red/blue edge colourings of a complete graph.  $\NR(v)$ and $\NB(v)$ are the red and blue neighbourhoods of a vertex $v$.  For disjoint non-empty vertex sets $X,Y$, $\eR(X,Y)$ is the number of red edges between them and $d(X,Y)=\eR(X,Y)/(|X||Y|)$.  A \emph{candidate} is a pair $(X,Y)$ of disjoint non-empty sets; it is \emph{$(k,\ell,t)$-good} if $X\cup Y$ contains a red $K_k$, or $X$ contains a blue $K_t$, or $Y$ contains a blue $K_\ell$.  As $K_1$ is a vertex, every candidate is $(k,\ell,t)$-good when $k=1$ or $t=1$.  A \emph{blue book} $(S,T)$ consists of disjoint $S,T$ with $S$ a blue clique and all $S$--$T$ edges blue.
+
+\begin{definition}[valid functions]\label{def:valid}
+$G\colon(0,1]\to\R$ is \emph{valid} if for every $\eps>0$ there is $N$ such that $\Ram(k,\ell)\le\exp((G(\ell/k)+\eps)k)$ for all integers $k\ge\ell\ge1$ with $k+\ell\ge N$.  Its \emph{symmetric extension} is $\Gt(t)=G(t)$ for $0<t\le1$ and $\Gt(t)=tG(1/t)$ for $t>1$.
+\end{definition}
+
+By $\Ram(k,\ell)=\Ram(\ell,k)$, if $G$ is valid then for all $k,\ell\ge1$ with $k+\ell\ge N$, writing $t=\ell/k$,
+\begin{equation}\label{eq:validsym}
+\Ram(k,\ell)\le\exp\bigl(\Gt(t)\,k+\eps\max(k,\ell)\bigr)
+\end{equation}
+(for $\ell>k$: $\Ram(\ell,k)\le e^{(G(k/\ell)+\eps)\ell}$ and $G(k/\ell)\ell=\Gt(t)k$).  The function $H$ is valid with $N=1$, $\eps=0$: $\binom{k+\ell}{\ell}\le(k+\ell)^{k+\ell}k^{-k}\ell^{-\ell}=e^{H(\ell/k)k}$.
+
+\begin{definition}[admissible pairs]\label{def:adm}
+For $G\colon(0,1]\to\R$, a pair $(x,y)\in(0,1)^2$ is \emph{$G$-admissible} if $-\log x-t\log y\ge\Gt(t)$ for all $t>0$.
+\end{definition}
+
+Thus $(x,y)$ is $G$-admissible iff $x^{-k}y^{-\ell}\ge e^{\Gt(\ell/k)k}$ for all $k,\ell\ge1$, i.e.\ iff $x^{-k}y^{-\ell}$ dominates the bound~\eqref{eq:validsym} (up to the $o$-term) for \emph{every} ratio, in both orientations.  The set $\{(x,y):G\text{-admissible}\}$ is closed under decreasing $x$ or $y$.
+
+\section{The key lemma}\label{sec:key}
+
+Lemma~\ref{lem:key} is \cite[Lemma~12]{GNNW} (a compression of the book algorithm of~\cite{CGMS}) with the hypotheses on Ramsey numbers made explicit.  We include the complete proof, following~\cite{GNNW}.
+
+\begin{lemma}[Cauchy--Schwarz]\label{lem:cs}
+For every candidate $(X,Y)$: $\ \sum_{v\in X}\eR(X,\NR(v)\cap Y)=\sum_{y\in Y}\deg_{\mathrm R}(y,X)^2\ge\eR(X,Y)^2/|Y|$.
+\end{lemma}
+\begin{proof}
+Both sums count triples $(v,u,y)$ with $v,u\in X$, $y\in Y$, $vy$ and $uy$ red; then apply Cauchy--Schwarz to $\sum_y\deg_{\mathrm R}(y,X)$.
+\end{proof}
+
+\begin{lemma}[books]\label{lem:book}
+Let $0<\mu<1$, let $b,m,k\ge1$ be integers with $m\ge5b^2/\mu$, and let $X$ be a vertex set with $|X|\ge5m^2$ such that at least $\Ram(k,m)$ vertices $v\in X$ satisfy $|\NB(v)\cap X|\ge\mu|X|$.  Then $X$ contains a red $K_k$ or a blue book $(S,T)$ with $|S|=b$ and $|T|\ge\frac12\mu^b|X|$.
+\end{lemma}
+\begin{proof}
+Let $W=\{v\in X:|\NB(v)\cap X|\ge\mu|X|\}$.  Since $|W|\ge\Ram(k,m)$, $W$ contains a red $K_k$ (done) or a blue $K_m$ with vertex set $U$.  For $z\in X\setminus U$ let $\sigma_z=|\NB(z)\cap U|/m$.  Then
+$m\sum_{z\in X\setminus U}\sigma_z=e_{\mathrm B}(U,X\setminus U)\ge\sum_{u\in U}(|\NB(u)\cap X|-(m-1))\ge m(\mu|X|-m)$,
+so the mean $\bar\sigma$ of the $\sigma_z$ satisfies $\bar\sigma\ge\mu-m/|X|$.  Pick $S\subseteq U$ uniformly at random with $|S|=b$ and let $T=\{z\in X\setminus U:S\subseteq\NB(z)\}$, so that $(S,T)$ is a blue book.  If $\sigma_zm\ge b$ then
+\[
+\Pr[z\in T]=\binom{\sigma_zm}{b}\Big/\binom mb=\prod_{i=0}^{b-1}\frac{\sigma_zm-i}{m-i}\ge\Bigl(\frac{\sigma_zm-b}{m-b}\Bigr)^b\ge\Bigl(\sigma_z-\frac bm\Bigr)^b,
+\]
+since $(a-i)/(m-i)$ is non-increasing in $i$ when $a\le m$.  By convexity of $u\mapsto(u-b/m)_+^b$,
+\[
+\mathbb E|T|\ge\sum_{z\in X\setminus U}\Bigl(\sigma_z-\frac bm\Bigr)_+^b\ge|X\setminus U|\Bigl(\bar\sigma-\frac bm\Bigr)_+^b\ge(|X|-m)\Bigl(\mu-\frac m{|X|}-\frac bm\Bigr)^b .
+\]
+Here $b/m\le\mu/(5b)$ and $m/|X|\le1/(5m)\le\mu/(25b^2)\le\mu/(25b)$, so the last factor is at least $\mu^b(1-\frac6{25b})^b\ge0.76\,\mu^b$ (Bernoulli), and $|X|-m\ge(1-\frac1{5m})|X|\ge0.8|X|$.  Hence $\mathbb E|T|\ge0.608\,\mu^b|X|$.
+\end{proof}
+
+\begin{lemma}\label{lem:limit}
+Let $0<\eta<1/2$, $p,\mu\in[\eta,1-\eta]$ and let $r\ge2\eta^{-1}\log(1/\eta)$ be an integer.  Then
+\[
+(p^{1/r}-\mu)^r(1-\mu)^{1-r}\ \ge\ (1-\mu)p^{1/(1-\mu)}\Bigl(1-\frac{\log^2(1/\eta)}{\eta^2r}\Bigr).
+\]
+\end{lemma}
+\begin{proof}
+Let $u=\log p/(1-\mu)$, so $|u|\le\eta^{-1}\log(1/\eta)\le r/2$.  From $p^{1/r}\ge1+(\log p)/r$ we get $(p^{1/r}-\mu)/(1-\mu)\ge1+u/r>0$.  For $|v|\le1/2$, $\log(1+v)\ge v-v^2$, so $(1+u/r)^r\ge e^{u-u^2/r}\ge e^u(1-u^2/r)$.  Multiply by $1-\mu$.
+\end{proof}
+
+\begin{lemma}[key lemma]\label{lem:key}
+Let $0<\eta<1/4$, $0<\eps<\eta/4$, let $r\ge1$ be an integer and let $x,y,\mu,p\in(0,1)$ satisfy $\mu\ge\eta$, $p-\eps\ge\eta$, $x+\eps<1$, $y+\eps<1$, $\mu+\eps<1$ and
+\begin{align}
+x^{1/r}(1-\mu-\eps)^{1-1/r}+\mu+2\eps&\le(p-\eps)^{1/r},\label{eq:K1}\\
+\eps(\mu+x)&\le\mu(1-\mu-x).\label{eq:K2}
+\end{align}
+There is $L_0=L_0(\eps,r,\eta)$ such that for all integers $\ell\ge L_0$, $k\ge1$, $t\ge1$ the following holds.  Suppose
+\begin{enumerate}[label=\textup{(H\arabic*)},leftmargin=3em]
+\item $\Ram(k',\ell)\le(x+\eps)^{-k'}(y+\eps)^{-\ell}$ for every integer $1\le k'\le k$;
+\item $(X,Y)$ is a candidate such that, with $\delta_s:=\eps/s$ and $\alpha_0:=d(X,Y)+\delta_{k+t}-p$,
+\begin{equation}\label{eq:potential}
+\alpha_0>0\qquad\text{and}\qquad\alpha_0^{\,r}|X||Y|\ge x^{-k}y^{-\ell}\mu^{-t}.
+\end{equation}
+\end{enumerate}
+Then $(X,Y)$ is $(k,\ell,t)$-good.
+\end{lemma}
+
+\begin{proof}[Choice of $L_0$]
+Write $n=k+t$, $N=k+\ell+t$ and
+\begin{equation}\label{eq:bm}
+b=\Bigl\lceil\frac{r\log\bigl((1+\eps)n^2/\eps\bigr)+\log2}{\log(1+\eps/\mu)}\Bigr\rceil,\qquad m=\lceil5b^2/\mu\rceil,\qquad w=(n+m)^m .
+\end{equation}
+Since $\mu\ge\eta$, we have $\log(1+\eps/\mu)\ge\log(1+\eps)$ and $m\le\lceil5b^2/\eta\rceil$, so $b=O(\log n)$, $m=O(\log^2n)$ and $\log(2n^3w/(\eps\eta))=O(\log^3n)$ with constants depending only on $\eps,r,\eta$.  Hence there are $K_1,C_1$ depending only on $(\eps,r,\eta)$ such that $(1+\eps)^n\ge\max\{5m^2,\,2n^3w/(\eps\eta),\,1/\eps\}$ for $n\ge K_1$ and $\max\{\cdots\}\le C_1$ for $n<K_1$.  Let $(1+\eps)^{L_0-r}\ge C_1$.  Then, for $\ell\ge L_0$ and all $k,t\ge1$ (using $p-\eps\ge\eta$),
+\begin{equation}\label{eq:R}
+(1+\eps)^{N-r}\ \ge\ \max\Bigl\{5m^2,\ \frac{2n^3w}{\eps(p-\eps)},\ \frac1\eps\Bigr\}. \qedhere
+\end{equation}
+\end{proof}
+
+\begin{proof}[Proof of Lemma~\ref{lem:key}]
+Fix $\ell\ge L_0$ and induct on $n=k+t$; the cases $k=1$, $t=1$ are trivial, so let $k,t\ge2$ and assume the statement for smaller $k+t$ (same $\ell$ and parameters).
+
+\smallskip\noindent\emph{Step 0.}  If $|Y|\ge(x+\eps)^{-k}(y+\eps)^{-\ell}$ then $|Y|\ge\Ram(k,\ell)$ by (H1), so $Y$ contains a red $K_k$ or a blue $K_\ell$ and we are done.  Hence assume $|Y|<(x+\eps)^{-k}(y+\eps)^{-\ell}$.  As $\alpha_0\le1+\eps$, \eqref{eq:potential} gives
+\begin{equation}\label{eq:Xlarge}
+|X|\ge\frac{x^{-k}y^{-\ell}\mu^{-t}}{\alpha_0^{\,r}|Y|}>\frac{(1+\eps/x)^k(1+\eps/y)^\ell\mu^{-t}}{(1+\eps)^r}\ge(1+\eps)^{N-r},
+\end{equation}
+and also $\alpha_0|X|\ge(1+\eps)^{N-r}$ (if $\alpha_0\le1$ then $\alpha_0|X|\ge\alpha_0^r|X|>(1+\eps)^N$ by the same computation; if $\alpha_0>1$ then $\alpha_0|X|>|X|$).  By~\eqref{eq:R},
+\begin{equation}\label{eq:R2}
+|X|\ge5m^2,\qquad w\le\frac{\eps(p-\eps)}{2n^3}|X|,\qquad\frac1{\alpha_0|X|}<\eps .
+\end{equation}
+
+\smallskip\noindent\emph{Step 1: regularisation.}
+If some $v\in X$ has $|\NR(v)\cap Y|<(p-\delta_n)|Y|=(d(X,Y)-\alpha_0)|Y|$, put $X'=X\setminus\{v\}$.  Then $\eR(X',Y)>d(X,Y)|X||Y|-(d(X,Y)-\alpha_0)|Y|$, so $d(X',Y)>d(X,Y)+\alpha_0/(|X|-1)$ and $\alpha_0':=d(X',Y)+\delta_n-p>\alpha_0|X|/(|X|-1)$, whence $(\alpha_0')^r|X'||Y|>\alpha_0^r|X||Y|$.  Thus $(X',Y)$ satisfies (H2) (and $X'\ne\emptyset$), and goodness of $(X',Y)$ implies that of $(X,Y)$.  Repeating, we may assume
+\begin{equation}\label{eq:reg}
+|\NR(v)\cap Y|\ge(p-\delta_n)|Y|\ge(p-\eps)|Y|\qquad(v\in X);
+\end{equation}
+\eqref{eq:Xlarge}--\eqref{eq:R2} remain valid since they only used~\eqref{eq:potential} and $|Y|$.
+
+\smallskip\noindent\emph{Step 2: many vertices of large blue degree.}
+Let $W=\{v\in X:|\NB(v)\cap X|\ge(\mu+\eps)|X|\}$ and note $\Ram(k,m)\le\binom{k+m}m\le w$.  Suppose $|W|\ge w$.  By Lemma~\ref{lem:book} (with $\mu+\eps$ for $\mu$; $m\ge5b^2/(\mu+\eps)$ and $|X|\ge5m^2$), $X$ contains a red $K_k$ (done) or a blue book $(S,T)$ with $|S|=b$, $|T|\ge\frac12(\mu+\eps)^b|X|$.  If $t\le b$ then $S\supseteq$ a blue $K_t$ (done).  Otherwise put $t'=t-b\ge1$ and consider $(T,Y)$ with parameters $(k,\ell,t')$.  By~\eqref{eq:reg}, $d(T,Y)\ge p-\delta_n$, so
+\[
+\alpha_0(T,Y):=d(T,Y)+\delta_{k+t'}-p\ge\delta_{n-b}-\delta_n=\frac{\eps b}{n(n-b)}\ge\frac\eps{n^2}>0,
+\]
+and by~\eqref{eq:potential}, $\alpha_0\le1+\eps$ and the choice~\eqref{eq:bm} of $b$,
+\[
+\alpha_0(T,Y)^r|T||Y|\ge\Bigl(\frac\eps{n^2}\Bigr)^r\frac{(\mu+\eps)^b}2\cdot\frac{x^{-k}y^{-\ell}\mu^{-t}}{(1+\eps)^r}
+=\frac{(1+\eps/\mu)^b}2\Bigl(\frac\eps{(1+\eps)n^2}\Bigr)^rx^{-k}y^{-\ell}\mu^{-t'}\ge x^{-k}y^{-\ell}\mu^{-t'} .
+\]
+(H1) is unchanged.  By induction $(T,Y)$ is $(k,\ell,t')$-good; a blue $K_{t'}$ in $T$ together with $S$ is a blue $K_t$ in $X$, and the other outcomes are inherited.  So $(X,Y)$ is good.
+
+\smallskip\noindent\emph{Step 3: choosing a vertex.}
+Now let $|W|<w$.  For $v\in X$ let $Y_v=\NR(v)\cap Y\neq\emptyset$ and $d_v=d(X,Y_v)$; put $d=d(X,Y)$.  Lemma~\ref{lem:cs} gives $\sum_v|Y_v|d_v\ge d^2|X||Y|=d\sum_v|Y_v|$, i.e.\ $\sum_{v\in X}|Y_v|(d_v-d)\ge0$; the terms with $v\in W$ contribute less than $w|Y|$.  If $d_v<d-\gamma$ for all $v\in X\setminus W$, where $\gamma=\eps/n^3$, then by~\eqref{eq:reg}
+$-w|Y|<-\gamma(|X|-w)(p-\eps)|Y|$, so $w>\gamma(p-\eps)|X|/2$, contradicting~\eqref{eq:R2}.  Fix therefore $v\in X\setminus W$ with
+\begin{equation}\label{eq:v}
+d(X,Y')\ge d(X,Y)-\frac\eps{n^3},\qquad|Y'|\ge(p-\eps)|Y|,\qquad|\NB(v)\cap X|<(\mu+\eps)|X|,\qquad Y':=\NR(v)\cap Y,
+\end{equation}
+and let $X_R=\NR(v)\cap X$, $X_B=\NB(v)\cap X$, $p'=p-\delta_{n-1}$, $\alpha=d(X,Y')-p'$, $\alpha_R=d(X_R,Y')-p'$, $\alpha_B=d(X_B,Y')-p'$ (the last two when the sets are non-empty).  Since $\delta_{n-1}-\delta_n=\eps/(n(n-1))\ge\eps/n^3$, \eqref{eq:v} gives $\alpha\ge\alpha_0>0$.
+
+\smallskip\noindent\emph{Step 4a: red step.}  Suppose $X_R\ne\emptyset$, $\alpha_R>0$ and $\alpha_R^{\,r}|X_R|\ge\frac x{p-\eps}\alpha^r|X|$.  Consider $(X_R,Y')$ with parameters $(k-1,\ell,t)$: (H1) holds a fortiori, $\alpha_0(X_R,Y')=\alpha_R>0$, and
+\[
+\alpha_R^{\,r}|X_R||Y'|\ge\frac x{p-\eps}\alpha^r|X|(p-\eps)|Y|\ge x\alpha_0^{\,r}|X||Y|\ge x^{-(k-1)}y^{-\ell}\mu^{-t} .
+\]
+By induction $(X_R,Y')$ is $(k-1,\ell,t)$-good; as $v$ is red to all of $X_R\cup Y'$, a red $K_{k-1}$ there gives a red $K_k$, and the other outcomes are inherited.  So $(X,Y)$ is good.
+
+\smallskip\noindent\emph{Step 4b: blue step.}  Suppose $X_B\ne\emptyset$, $\alpha_B>0$ and $\alpha_B^{\,r}|X_B|\ge\frac\mu{p-\eps}\alpha^r|X|$.  Consider $(X_B,Y')$ with parameters $(k,\ell,t-1)$: (H1) holds, $\alpha_0(X_B,Y')=\alpha_B>0$ and
+$\alpha_B^{\,r}|X_B||Y'|\ge\mu\alpha_0^{\,r}|X||Y|\ge x^{-k}y^{-\ell}\mu^{-(t-1)}$.  By induction it is $(k,\ell,t-1)$-good; a blue $K_{t-1}$ in $X_B$ with $v$ is a blue $K_t$ in $X$.  So $(X,Y)$ is good.
+
+\smallskip\noindent\emph{Step 4c: neither applies---contradiction.}  Splitting $\eR(X,Y')-p'|X||Y'|$ along $X=X_R\sqcup X_B\sqcup\{v\}$ and using $\eR(\{v\},Y')=|Y'|$ gives $\alpha|X||Y'|=\alpha_R|X_R||Y'|+\alpha_B|X_B||Y'|+(1-p')|Y'|$ (terms for empty sets being $0$), hence
+\begin{equation}\label{eq:decomp}
+1\le\frac{(\alpha_R|X_R|)_+}{\alpha|X|}+\frac{(\alpha_B|X_B|)_+}{\alpha|X|}+\frac1{\alpha|X|}.
+\end{equation}
+As Step 4a does not apply, either $(\alpha_R|X_R|)_+=0$ or $\alpha_R|X_R|=(\alpha_R^{\,r}|X_R|)^{1/r}|X_R|^{1-1/r}<(\frac x{p-\eps})^{1/r}\alpha|X|^{1/r}|X_R|^{1-1/r}$; similarly for $B$.  With $a=|X_B|/|X|\in[0,\mu+\eps)$ and $|X_R|/|X|\le1-a$, \eqref{eq:decomp} yields
+\begin{equation}\label{eq:contra}
+(p-\eps)^{1/r}\le f(a)+\frac{(p-\eps)^{1/r}}{\alpha|X|},\qquad f(a):=x^{1/r}(1-a)^{1-1/r}+\mu^{1/r}a^{1-1/r}.
+\end{equation}
+For $r\ge2$, $f'(a)=(1-\frac1r)[(\mu/a)^{1/r}-(x/(1-a))^{1/r}]\ge0$ iff $a\le\mu/(\mu+x)$, and~\eqref{eq:K2} says $\mu+\eps\le\mu/(\mu+x)$; so $f$ is non-decreasing on $[0,\mu+\eps]$ (constant if $r=1$).  Using $\mu^{1/r}(\mu+\eps)^{1-1/r}\le\mu+\eps$ (weighted AM--GM),
+$f(a)\le f(\mu+\eps)\le x^{1/r}(1-\mu-\eps)^{1-1/r}+\mu+\eps$.  Finally $\alpha|X|\ge\alpha_0|X|>1/\eps$ by~\eqref{eq:R2}, so~\eqref{eq:contra} gives $(p-\eps)^{1/r}<x^{1/r}(1-\mu-\eps)^{1-1/r}+\mu+2\eps$, contradicting~\eqref{eq:K1}.
+\end{proof}
+
+\section{The bootstrap}\label{sec:boot}
+
+\subsection{One round}
+
+The following is~\cite[Theorem~14]{GNNW} with two harmless modifications: the identity defining $X$ is relaxed to an inequality (the proof only ever uses the inequality), and admissibility is phrased through a valid function $G$ rather than through the set $\mathcal R$ of~\cite{GNNW}.  We include the proof to make all constants explicit.
+
+\begin{theorem}[one round]\label{thm:onestep}
+Let $G\colon(0,1]\to\R$ be valid.  Let $F\colon(0,1]\to[0,\infty)$ be $C^1$ with $F'>0$ and $C_F:=\sup_{0<\lam\le1}(H(\lam)-F(\lam))/\lam<\infty$, and let $M,X,Y\colon(0,1]\to(0,1)$ be continuous with
+\begin{equation}\label{eq:pX}
+X(\lam)\le(1-M(\lam))\,p(\lam)^{1/(1-M(\lam))},\qquad p(\lam):=1-e^{-F'(\lam)} .
+\end{equation}
+Assume that for every $\lam\in(0,1]$:
+\begin{enumerate}[label=\textup{(A\arabic*)},leftmargin=3em]
+\item $(X(\lam),Y(\lam))$ is $G$-admissible;
+\item $\psi(\lam):=F(\lam)+\tfrac12\bigl(\log X(\lam)+\lam\log M(\lam)+\lam\log Y(\lam)\bigr)>0$.
+\end{enumerate}
+Then $F$ is valid.
+\end{theorem}
+
+\begin{proof}
+Fix $\eps\in(0,1/4]$.  We shall find $K$ such that $\Ram(k,\ell)\le e^{(F(\ell/k)+2\eps)k}$ for all $k\ge K$ and $1\le\ell\le k$; since $k\ge(k+\ell)/2$, this gives validity with $N=2K$.
+
+\smallskip\noindent\emph{Small ratios.}  Put $\eps_0=\min\{1,\eps/(2C_F)\}$ if $C_F>0$ and $\eps_0=1$ otherwise.  For $\ell\le\eps_0k$, $\Ram(k,\ell)\le e^{H(\lam)k}\le e^{(F(\lam)+C_F\lam)k}\le e^{(F(\lam)+\eps/2)k}$, $\lam=\ell/k$.  Let $I=[\eps_0,1]$.
+
+\smallskip\noindent\emph{Constants.}  By continuity and compactness choose $\eta\in(0,1/4)$ with $X,Y,M,p\in[\eta,1-\eta]$ on $I$, let $\psi_{\min}=\min_I\psi>0$, and put $\theta=\min\{2\eps,\psi_{\min}/2\}\le1/2$.  By uniform continuity of $F'$ on $I$ choose $\theta'\in(0,\min_IF'/2)$ so that $p_\lam:=1-e^{-F'(\lam)+\theta'}$ satisfies $p_\lam\ge\eta/2$ and $\log(p(\lam)/p_\lam)\le\theta\eta/4$ on $I$.  Define
+\[
+x_\lam=X(\lam)e^{-\theta},\qquad y_\lam=Y(\lam)e^{-\theta},\qquad\mu_\lam=M(\lam)\qquad(\lam\in I),
+\]
+so $x_\lam,y_\lam\in[\eta/2,1-\eta]$.  By (A1),
+\begin{equation}\label{eq:regmargin}
+-\log x_\lam-t\log y_\lam\ge\Gt(t)+\theta(1+t)\qquad(t>0),
+\end{equation}
+and by~\eqref{eq:pX}, since $1/(1-\mu_\lam)\le1/\eta$,
+\[
+x_\lam\le(1-\mu_\lam)p_\lam^{1/(1-\mu_\lam)}\exp\Bigl(\frac{\log(p(\lam)/p_\lam)}{1-\mu_\lam}-\theta\Bigr)\le(1-\mu_\lam)p_\lam^{1/(1-\mu_\lam)}e^{-3\theta/4}.
+\]
+By Lemma~\ref{lem:limit} (with $\eta/2$) fix an integer $r\ge2$ with $(p_\lam^{1/r}-\mu_\lam)^r(1-\mu_\lam)^{1-r}\ge(1-\mu_\lam)p_\lam^{1/(1-\mu_\lam)}e^{-\theta/4}$ for all $\lam\in I$.  Then
+\begin{equation}\label{eq:xr}
+x_\lam^{1/r}(1-\mu_\lam)^{1-1/r}\le e^{-\theta/(2r)}\bigl(p_\lam^{1/r}-\mu_\lam\bigr)\qquad(\lam\in I),
+\end{equation}
+so in particular $p_\lam^{1/r}-\mu_\lam\ge x_\lam^{1/r}(1-\mu_\lam)^{1-1/r}\ge\eta/2$.  Now fix $\eps_1>0$ with
+\[
+\text{(a) } 2\eps_1+\frac{4\eps_1}\eta\le\bigl(1-e^{-\theta/(2r)}\bigr)\frac\eta2,\qquad\text{(b) }\eps_1\le\frac{\eta^3}4,\qquad\text{(c) }\eps_1\le\frac{\theta\eta}8,\qquad\text{(d) }\eps_1\le\frac\eta{32}.
+\]
+We check the hypotheses of Lemma~\ref{lem:key} for $(x_\lam,y_\lam,\mu_\lam,p_\lam)$ with $\eps_1$ in place of $\eps$ and $\eta/4$ in place of $\eta$, uniformly in $\lam\in I$.  Clearly $\eps_1<\eta/16$, $\mu_\lam\ge\eta/4$, $p_\lam-\eps_1\ge\eta/4$, and $x_\lam+\eps_1,\,y_\lam+\eps_1,\,\mu_\lam+\eps_1<1$.  For~\eqref{eq:K1}, by~\eqref{eq:xr} and (a),
+\[
+x_\lam^{1/r}(1-\mu_\lam-\eps_1)^{1-1/r}+\mu_\lam+2\eps_1\le p_\lam^{1/r}-\bigl(1-e^{-\theta/(2r)}\bigr)\frac\eta2+2\eps_1\le p_\lam^{1/r}-\frac{4\eps_1}\eta\le(p_\lam-\eps_1)^{1/r},
+\]
+the last step because $\frac{d}{du}u^{1/r}=\frac1ru^{1/r-1}\le u^{-1}\le4/\eta$ on $[\eta/4,1]$.  For~\eqref{eq:K2}: $p<1$ and $1/(1-M)\ge1$ give $X\le(1-M)p$, so $1-\mu_\lam-x_\lam\ge(1-M)(1-p)\ge\eta^2$ and $\eps_1(\mu_\lam+x_\lam)\le2\eps_1\le\eta^3/2\le\mu_\lam(1-\mu_\lam-x_\lam)$ by (b).  Let $L_0=L_0(\eps_1,r,\eta/4)$ be as in Lemma~\ref{lem:key}.
+
+\smallskip\noindent\emph{The Ramsey bounds consumed by (H1).}  Let $N_G$ be such that~\eqref{eq:validsym} holds for $G$ with $\theta/2$ in place of $\eps$ whenever $k+\ell\ge N_G$, and let $L_1=\max\{L_0,N_G\}$.  Let $\ell\ge L_1$, $\lam\in I$ and $k'\ge1$ be arbitrary, and $t=\ell/k'$.  By (c), $\log(x_\lam+\eps_1)\le\log x_\lam+\eps_1/x_\lam\le\log x_\lam+\theta/4$, and likewise for $y_\lam$; with~\eqref{eq:regmargin},
+\[
+-k'\log(x_\lam+\eps_1)-\ell\log(y_\lam+\eps_1)\ge k'\bigl(\Gt(t)+\tfrac34\theta(1+t)\bigr)\ge\Gt(t)k'+\tfrac\theta2\max(k',\ell)\ge\log\Ram(k',\ell),
+\]
+where the last inequality is~\eqref{eq:validsym} ($k'+\ell\ge N_G$).  Thus (H1) holds for every $k$.
+
+\smallskip\noindent\emph{The induction.}  Let $K\ge\max\{L_1/\eps_0,\,2/\eps_0\}$ be so large that for all $k\ge K$: (i) $|F'(s)-F'(s')|\le\theta'/2$ whenever $s,s'\in[\eps_0/2,1]$, $|s-s'|\le1/k$; (ii) $e^{-\eps k}\le1-e^{-\theta'/2}$ (recall $F\ge0$); (iii) $2\eps k\ge r\log(2k/\eps_1)+\log16$; (iv) $e^{(F(\eps_0)+\eps)k}\ge4$; (v) $e^{\eps k}\ge2$.  Fix $k\ge K$.  We prove by induction on $\ell\in\{1,\dots,k\}$ that every colouring of $K_N$ with $N:=\lceil e^{(F(\ell/k)+\eps)k}\rceil$ contains a red $K_k$ or a blue $K_\ell$.  For $\ell\le\eps_0k$ this was shown above.  Let $\ell>\eps_0k$, $\lam=\ell/k\in I$, and consider a colouring of $K_N$.
+
+\emph{Low red density.}  If the red density is $<p_\lam$, some vertex has blue degree at least $(1-p_\lam)(N-1)=e^{-F'(\lam)+\theta'}(N-1)\ge e^{(F(\lam)+\eps)k-F'(\lam)+\theta'/2}$ by (ii).  By the mean value theorem, $F(\frac{\ell-1}k)k=F(\lam)k-F'(\xi)$ with $\xi\in[\lam-\frac1k,\lam]\subseteq[\eps_0/2,1]$, and $F'(\xi)\ge F'(\lam)-\theta'/2$ by (i).  Hence the blue neighbourhood has at least $\lceil e^{(F((\ell-1)/k)+\eps)k}\rceil$ vertices and, by the induction hypothesis (or the small-ratio case), contains a red $K_k$ or a blue $K_{\ell-1}$, which with the vertex gives a blue $K_\ell$.
+
+\emph{High red density.}  If the red density is $\ge p_\lam$, choose disjoint $X,Y$ with $|X|=|Y|=\lfloor N/2\rfloor$ maximising $\eR(X,Y)$.  For a uniformly random such pair, each edge lies between $X$ and $Y$ with probability $|X||Y|/\binom N2$, so $\mathbb E\,d(X,Y)$ equals the red density and $d(X,Y)\ge p_\lam$.  Apply Lemma~\ref{lem:key} with parameters $(x_\lam,y_\lam,\mu_\lam,p_\lam,\eps_1,r)$, this $\ell\ge\eps_0k\ge L_1$, and $t=\ell$.  (H1) was verified.  For (H2): $\alpha_0=d(X,Y)+\eps_1/(k+\ell)-p_\lam\ge\eps_1/(2k)>0$, and by the definitions of $x_\lam,y_\lam$, the definition of $\psi$, and $\theta(1+\lam)\le2\theta\le\psi_{\min}\le2\psi(\lam)$,
+\[
+x_\lam^{-k}y_\lam^{-\ell}\mu_\lam^{-\ell}=\exp\bigl(k[-\log X-\lam\log Y-\lam\log M+\theta(1+\lam)]\bigr)=\exp\bigl(k[2F(\lam)-2\psi(\lam)+\theta(1+\lam)]\bigr)\le e^{2F(\lam)k},
+\]
+while $\alpha_0^{\,r}|X||Y|\ge(\eps_1/2k)^r(N/2-1)^2\ge(\eps_1/2k)^re^{2(F(\lam)+\eps)k}/16\ge e^{2F(\lam)k}$ by (iv) and (iii).  Lemma~\ref{lem:key} shows that $(X,Y)$ is $(k,\ell,\ell)$-good, i.e.\ the colouring contains a red $K_k$ or a blue $K_\ell$.
+
+\smallskip
+Consequently $\Ram(k,\ell)\le e^{(F(\ell/k)+\eps)k}+1\le e^{(F(\ell/k)+2\eps)k}$ for all $k\ge K$, $\ell\le k$, by (v).
+\end{proof}
+
+\subsection{Self-consistency}
+
+\begin{theorem}[self-consistent bootstrap]\label{thm:selfconsistent}
+Let $F\colon(0,1]\to[0,\infty)$ be $C^1$ with $F'>0$ and $C_F<\infty$, and let $M,X,Y\colon(0,1]\to(0,1)$ be continuous with $X(\lam)=(1-M(\lam))p(\lam)^{1/(1-M(\lam))}$, $p=1-e^{-F'}$, such that for all $\lam\in(0,1]$:
+\begin{enumerate}[label=\textup{(B\arabic*)},leftmargin=3em]
+\item $(X(\lam),Y(\lam))$ is $F$-admissible: $\ -\log X(\lam)-t\log Y(\lam)\ge\Ft(t)$ for all $t>0$;
+\item $\psi(\lam)=F(\lam)+\frac12(\log X(\lam)+\lam\log M(\lam)+\lam\log Y(\lam))>0$.
+\end{enumerate}
+Then $F$ is valid.
+\end{theorem}
+
+\begin{proof}
+For $\sigma\ge0$ put $F_\sigma(\lam)=F(\lam)+\sigma(1+\lam)$, $X_\sigma=Xe^{-\sigma}$, $Y_\sigma=Ye^{-\sigma}$.  We check the hypotheses of Theorem~\ref{thm:onestep} for the function $F_{\sigma/2}$, the valid input $G=F_\sigma$ and the triple $(M,X_\sigma,Y_\sigma)$.
+\begin{itemize}[leftmargin=2em]
+\item $F_{\sigma/2}$ is $C^1$, $\ge0$, $C_{F_{\sigma/2}}\le C_F$, and $F_{\sigma/2}'=F'+\sigma/2>0$, so $p_{\sigma/2}:=1-e^{-F'-\sigma/2}\ge p$ and
+$X_\sigma\le X=(1-M)p^{1/(1-M)}\le(1-M)p_{\sigma/2}^{1/(1-M)}$, which is~\eqref{eq:pX}.
+\item The symmetric extension of $F_\sigma$ is $\Ft_\sigma(t)=\Ft(t)+\sigma(1+t)$ for \emph{all} $t>0$ (for $t>1$: $t\,F_\sigma(1/t)=t F(1/t)+\sigma(t+1)$).  Hence, by (B1),
+$-\log X_\sigma-t\log Y_\sigma=-\log X-t\log Y+\sigma(1+t)\ge\Ft_\sigma(t)$: the pair $(X_\sigma,Y_\sigma)$ is $F_\sigma$-admissible, which is (A1).
+\item (A2) for $F_{\sigma/2}$ with $(X_\sigma,Y_\sigma)$ reads
+$F+\tfrac\sigma2(1+\lam)+\tfrac12\bigl(\log X-\sigma+\lam\log M+\lam\log Y-\lam\sigma\bigr)=\psi(\lam)>0$.
+\end{itemize}
+Thus, by Theorem~\ref{thm:onestep}, \emph{if $F_\sigma$ is valid then $F_{\sigma/2}$ is valid}.  Since $F\ge0$, $F_{\log4}\ge\log4$, and the constant $\log4$ is valid ($\Ram(k,\ell)\le\binom{k+\ell-2}{k-1}\le4^k$); so $F_{\log4}$ is valid, and by induction so is $F_{\sigma_j}$ with $\sigma_j=2^{-j}\log4$ for every $j$.  Given $\eps>0$ choose $j$ with $2\sigma_j\le\eps/2$; as $F_{\sigma_j}\le F+\eps/2$ on $(0,1]$, validity of $F_{\sigma_j}$ with $\eps/2$ gives validity of $F$ with $\eps$.
+\end{proof}
+
+\begin{remark}\label{rem:weak}
+Theorem~\ref{thm:selfconsistent} will be applied, in Section~\ref{sec:cert}, to data that are only piecewise continuous.  Its proof (through Theorem~\ref{thm:onestep}) uses the continuity of $M,X,Y$ and of $\psi$ only to produce, on each compact $I=[\eps_0,1]$, uniform bounds $X,Y,M,p\in[\eta,1-\eta]$ and $\inf_I\psi>0$, and it uses the identity for $X$ only through the inequality~\eqref{eq:pX}.  The theorem therefore holds verbatim with ``continuous'' replaced by these two conclusions---in particular for the piecewise-quadratic $C^1$ spline $F$ of Section~\ref{sec:cert}, whose $X$ and $Y$ are step functions with finitely many values and whose per-cell slack bounds are part of the certificate.  The formalised ladder theorem (Remark~\ref{rem:lean}) is stated in exactly this weakened form and is applied unchanged.  Self-consistency is also what legitimises the tail of the certificate: below $\lam_0$ the input bound against which admissibility is tested is $F$ itself, not the Erd\H{o}s--Szekeres bound, so $F$ may simply be continued by a straight line (Section~\ref{sec:spline}).
+\end{remark}
+
+\begin{remark}\label{rem:lean}
+Theorem~\ref{thm:selfconsistent} has been formalised in Lean~4 on top of the RamseyLean development accompanying~\cite{GNNW} (which formalises Lemma~\ref{lem:key} and Theorem~\ref{thm:onestep} as \texttt{Candidate.isGood\_of\_density\_card\_product} and \texttt{uniformRamseyExpBound\_of\_descent}): file \texttt{SelfConsistent.lean}, theorem \texttt{uniformRamseyExpBound\_selfConsistent}, depending only on the axioms \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}.  The only change to the existing development is the relaxation of the identity for $X$ in their Theorem~14 to the inequality~\eqref{eq:pX}, whose proof already used only the inequality.  The proof above is the formalised one; the shift $\sigma(1+\lam)$ (rather than a constant) is what makes every rung need only the pointwise slack $\psi>0$.
+
+Since the first version of this paper, the \emph{entire} proof of Theorem~\ref{thm:main} has been formalised; for the present revision the development is the directory \texttt{lean/Bootstrap2} of the artefact.  The rate function is \emph{defined from the certificate data}: $D$ and $M$ are the piecewise-linear interpolants of the nodes (clamped outside $[\lam_0,1]$) and $F:=F_0+\int_{\lam_0}^{\cdot}D$, so that \texttt{HasDerivAt F (D r) r} is the fundamental theorem of calculus, and the node values $F(\lam_j)=F_j$ are exact by the integer chain identity~\eqref{eq:chain}.  A Bool-valued cell checker (integer interval arithmetic at scale $10^{12}$, \texttt{exp}/\texttt{log} enclosed by Taylor series with directed rounding), mirrored bit-exactly by the Python verifier of Section~\ref{sec:computer}, is proved sound against the real-valued definitions; the validity of the tangent witnesses (each is literally a node of the certificate) is established by a monotone two-pointer merge pass; and the ladder theorem of the preceding paragraph is applied unchanged (Remark~\ref{rem:weak}).  Every cell is discharged by the Lean \emph{kernel} (\texttt{decide +kernel}; \texttt{native\_decide} is not used): $35\,770$ cells at about $0.31$\,s per cell, about $3.1$ core-hours over $140$ chunk files, with peak memory about $128$\,MB per chunk (against $5.3$\,GB per chunk for the ansatz certificate of the previous revision).  The final theorems, each depending only on the axioms \texttt{propext}, \texttt{Classical.choice}, \texttt{Quot.sound}, are \texttt{main\_bootstrap2} (validity of the spline rate function), \texttt{bootstrap2\_diagonal} ($\Ram(k,k)\le e^{(F_N+\eps)k}$ eventually, for every $\eps>0$, with the explicit rational $F_N$ of Theorem~\ref{thm:main}), and \texttt{bootstrap2\_diagonal\_num}: $\Ram(k,k)\le(37690/10000)^k$ for all large $k$---a fully formal decimal bound, where the previous revision stated the decimal form only in prose.
+\end{remark}
+
+\begin{remark}
+The ladder is what makes it legitimate to feed the bound $F$ into its own admissible region.  A direct induction on $k+\ell$ seems to fail: the region hypothesis is needed for pairs $(k',\ell)$ with $k'<k$ and the same $\ell$, whose sums may fall below any fixed starting point of the induction, and the trivial bound $\Ram\le4^{k+\ell}$ at the base is exponentially too weak to be absorbed.
+\end{remark}
+
+\section{The maximal admissible $Y$ and the spline certificate}\label{sec:cert}
+
+\subsection{A Legendre description of the admissible boundary}
+
+For fixed $x$, the largest $y$ with $(x,y)$ $F$-admissible is $y=e^{-S}$ with $S=\sup_{t>0}(\Ft(t)+\log x)/t$.  When $\Ft$ is concave the supremum is located by a tangent line; this is the content of~\cite[Lemma~15]{GNNW}, in the following form.
+
+\begin{lemma}\label{lem:legendre}
+Let $\varphi\colon(0,\infty)\to\R$ be concave, $u<0$, and $S(u)=\sup_{t>0}(\varphi(t)+u)/t$.  If $t_0>0$ and $\sigma$ is a supergradient of $\varphi$ at $t_0$ (i.e.\ $\varphi(t)\le\varphi(t_0)+\sigma(t-t_0)$ for all $t$) with $\varphi(t_0)-\sigma t_0+u\le0$, then $S(u)\le\sigma$.
+\end{lemma}
+\begin{proof}
+$(\varphi(t)+u)/t\le\bigl(\varphi(t_0)-\sigma t_0+u\bigr)/t+\sigma\le\sigma$ for every $t>0$.
+\end{proof}
+
+Suppose $F\colon(0,1]\to(0,\infty)$ is concave and $C^1$ with $F'>0$, and let $M,X\colon(0,1]\to(0,1)$ be given.  Put
+\begin{equation}\label{eq:SY}
+S(\lam)=\sup_{t>0}\frac{\Ft(t)+\log X(\lam)}t,\qquad Y(\lam)=e^{-S(\lam)},\qquad\psi(\lam)=F(\lam)+\tfrac12\bigl(\log X+\lam\log M-\lam S\bigr)(\lam),
+\end{equation}
+so that $Y(\lam)$ is the largest $y$ for which $(X(\lam),y)$ is $F$-admissible, and $\psi$ is the slack in (B2) for this maximal choice; when $X$ is the extremal value $(1-M)p^{1/(1-M)}$, $p=1-e^{-F'}$, of Theorem~\ref{thm:selfconsistent}, \eqref{eq:SY} is the slack of the self-consistent system for given $F$ and $M$.  Admissibility of a pair $(x,y)$ splits into the two orientations
+\[
+\text{(a) }\ -\log x-s\log y\ge F(s)\quad(0<s\le1),\qquad\qquad\text{(b) }\ -\log y-s\log x\ge F(s)\quad(0<s\le1),
+\]
+(b) being the condition at ratios $t=1/s\ge1$, where $\Ft(t)=tF(1/t)$.  Each orientation is certified by one tangent line: if $u\in(0,1]$ then, by concavity, $F(s)\le F(u)+(s-u)F'(u)$ for all $s\in(0,1]$, and the inequality $F(u)+(s-u)F'(u)\le-\log x-s\log y$ is \emph{linear} in $s$, so its validity at $s=0$ and $s=1$ implies (a); this is Lemma~\ref{lem:legendre} with $\varphi=F$, witness $t_0=u$ and $\sigma=F'(u)$.  Likewise for (b), with $x$ and $y$ interchanged.  In contrast with the closed-form ansatz of the previous revision of this paper, no concavity of $\Ft$ across the kink at $t=1$ is required: the two orientations are certified separately, each inside $(0,1]$.
+
+\subsection{The spline certificate}\label{sec:spline}
+
+The proof object replaces the explicit functions of the previous revision by \emph{free data}: a list of $N=35\,770$ cells covering $[\lam_0,1]$, $\lam_0=10^{-4}$ (a subdivision of the $10\,560$-interval partition on which the fixed point was computed; Section~\ref{sec:computer}).  Cell $j$ ($0\le j<N$) carries two \emph{nodes} $(\lam_j,F_j,d_j,M_j)$ and $(\lam_{j+1},F_{j+1},d_{j+1},M_{j+1})$---consecutive cells share a node---two constants $X_j,Y_j$, and two tangent \emph{witnesses} $w^{\mathrm a}_j,w^{\mathrm b}_j$, each of which is literally one of the $N+1$ nodes of the certificate.  All entries are exact scaled integers: $\lam,d,M,X,Y$ are integer multiples of $10^{-12}$ and $F$ of $\tfrac12\cdot10^{-24}$, so that the trapezoid identity
+\begin{equation}\label{eq:chain}
+F_{j+1}=F_j+\tfrac12\,(d_j+d_{j+1})(\lam_{j+1}-\lam_j)
+\end{equation}
+is \emph{exact} integer arithmetic (the factor $\tfrac12$ is absorbed by the scale of $F$).
+
+From the data define $D$ and $M$ as the piecewise-linear interpolants of $(\lam_j,d_j)$ and $(\lam_j,M_j)$, clamped to the constants $d_0$, $M_0$ on $(0,\lam_0]$; let
+\[
+F(r)=F_0+\int_{\lam_0}^{r}D(t)\,dt,
+\]
+and let $X,Y$ be the step functions with values $X_j,Y_j$ on cell $j$, frozen at $X_0,Y_0$ on $(0,\lam_0]$.  Then $F$ is $C^1$ and piecewise quadratic with $F'=D>0$, concave because $D$ is non-increasing, linear on the tail $(0,\lam_0]$, and $F(\lam_j)=F_j$ \emph{exactly}, by~\eqref{eq:chain}.
+
+\begin{proposition}[the certificate]\label{prop:cert}
+The file \texttt{pq\_cert\_final.json} identified in Section~\ref{sec:code} consists of $35\,770$ cells as above, with $\lam_0=10^{-4}$ and $\lam_N=1$.  For every cell $j$, with $\mathcal D_j=[d_{j+1},d_j]$ and $\mathcal M_j=[M_j,M_{j+1}]$:
+\begin{enumerate}[leftmargin=2em]
+\item[(C0)] \emph{structure}: $0<d_{j+1}\le d_j$; $0<M_j\le M_{j+1}<1$; $0<X_j,Y_j<1$; and the chain identity~\eqref{eq:chain};
+\item[(C1)] \emph{the $X$-inequality}: $X_j\le(1-e^{-D})^{1/(1-M)}(1-M)$ for all $(D,M)\in\mathcal D_j\times\mathcal M_j$;
+\item[(C2)] \emph{admissibility}: the witness $w^{\mathrm a}_j$ is a node $u$ with (its node values $F(u),D(u)$ being exact data)
+\[
+F(u)-u\,D(u)\le-\log X_j\qquad\text{and}\qquad F(u)+(1-u)\,D(u)\le-\log X_j-\log Y_j,
+\]
+and the witness $w^{\mathrm b}_j$ satisfies the same two inequalities with $X_j$ and $Y_j$ interchanged;
+\item[(C3)] \emph{slack}: with $\hat\psi_i=F_i+\tfrac12\bigl(\log X_j+\lam_i\log M_i+\lam_i\log Y_j\bigr)$ for $i\in\{j,j+1\}$ and the dip bound $\delta_j=\tfrac18(\lam_{j+1}-\lam_j)(\log M_{j+1}-\log M_j)\ge0$:\quad $\hat\psi_j>\delta_j$ and $\hat\psi_{j+1}>\delta_j$.
+\end{enumerate}
+Moreover the witnesses $w^{\mathrm a}_j$ are non-decreasing and the $w^{\mathrm b}_j$ non-increasing in $j$, each one a node of the certificate; and the single tail inequality
+\[
+\textup{(T)}\qquad F_0-d_0\lam_0+\tfrac12\log X_0>0
+\]
+holds.  Finally $F_N=2653604512524788171208898/(2\cdot10^{24})$ and $e^{F_N}\le3.7689719$.
+\end{proposition}
+
+\begin{proof}
+By computation, in interval arithmetic at scale $10^{-12}$ with $\exp$ and $\log$ enclosed by Taylor series with directed rounding, every comparison being between integers: once by the Lean kernel and once by a bit-exact Python mirror of the Lean checker (Section~\ref{sec:computer}).
+\end{proof}
+
+Proposition~\ref{prop:cert} implies Theorem~\ref{thm:main}, through Theorem~\ref{thm:selfconsistent} in the form of Remark~\ref{rem:weak}.  First the global hypotheses: $F'=D>0$; $F(0^+)=F_0-d_0\lam_0>0$ by (T), as $\log X_0<0$, so $F>0$; and $C_F<\infty$ because $(H(\lam)-F(\lam))/\lam\le\log(1/\lam)+1-F(0^+)/\lam\to-\infty$ as $\lam\downarrow0$.  Now fix $r$ in cell $j$.  The interpolants satisfy $D(r)\in\mathcal D_j$ and $M(r)\in\mathcal M_j$, so (C1) gives~\eqref{eq:pX} for the step value $X_j$.  For (B1): by concavity, $F(s)\le F(u)+(s-u)D(u)$ for every node $u$ and all $s\in(0,1]$, so the two endpoint checks (C2), linear interpolation in $s$, and the tangent bound give, for all $s\in(0,1]$,
+\[
+F(s)\le-\log X_j-s\log Y_j\qquad\text{and}\qquad F(s)\le-\log Y_j-s\log X_j,
+\]
+i.e.\ $-\log X_j-t\log Y_j\ge\Ft(t)$ for $t\le1$ (first inequality at $s=t$) and for $t\ge1$ (second inequality at $s=1/t$, multiplied by $t$): the pair $(X_j,Y_j)$ is $F$-admissible.  For (B2), write $r=(1-\theta)\lam_j+\theta\lam_{j+1}$.  Concavity places $F$ above its chord, $F(r)\ge(1-\theta)F_j+\theta F_{j+1}$; concavity of $\log$ places $\log M(r)$---the argument being the \emph{linear} interpolant of the $M_i$---above the linear interpolant of the $\log M_i$; and the convex quadratic $r\cdot(\text{linear interpolant of the }\log M_i)$ lies below the linear interpolant of the $\lam_i\log M_i$ by exactly $\theta(1-\theta)(\lam_{j+1}-\lam_j)(\log M_{j+1}-\log M_j)$.  Hence
+\[
+\psi(r)\ \ge\ (1-\theta)\hat\psi_j+\theta\hat\psi_{j+1}-\tfrac12\,\theta(1-\theta)(\lam_{j+1}-\lam_j)\bigl(\log M_{j+1}-\log M_j\bigr)\ \ge\ \min(\hat\psi_j,\hat\psi_{j+1})-\delta_j\ >\ 0
+\]
+by (C3), since $\theta(1-\theta)\le\tfrac14$.  This gives (B2) on $[\lam_0,1]$.  Finally the tail $r\in(0,\lam_0]$: there $D,M,X,Y$ are frozen at the values $d_0,M_0,X_0,Y_0$, which lie in cell $0$'s boxes, so~\eqref{eq:pX} holds by cell~$0$'s check (C1), and admissibility of $(X_0,Y_0)$ is a global statement already certified by cell~$0$'s (C2); moreover $\psi$ is \emph{linear} on the tail, equal to $\hat\psi_0>0$ at $\lam_0$ and to $F(0^+)+\tfrac12\log X_0=F_0-d_0\lam_0+\tfrac12\log X_0>0$ in the limit $\lam\downarrow0$, by (T).  Theorem~\ref{thm:selfconsistent} now gives validity of $F$, and $F(1)=F_N$ with $e^{F_N}\le3.7689719<3.769$ is Theorem~\ref{thm:main}.
+
+This is where self-consistency pays a second dividend.  The previous revision needed a hand analysis of small $\lam$ (its Lemma~5.3) because its $F$ was pinned to a closed form whose behaviour as $\lam\downarrow0$ had to be estimated; the certificate's $F$ is free data and may simply be \emph{continued by a straight line} below $\lam_0$, self-consistency making the frozen pair $(X_0,Y_0)$ admissible against the extended $F$ itself, with no appeal to the Erd\H{o}s--Szekeres bound below $\lam_0$.  The one-line inequality (T) is all that remains of the small-$\lam$ regime.
+
+\subsection{The computer-assisted part}\label{sec:computer}
+
+Three computations occur in this paper, with different status.
+
+(a) A \emph{heuristic} floating-point computation (\texttt{opt.py}, \texttt{opt2.py}) discovers the data; it plays no role in the proof.  It computes the fixed point of the bootstrap in the Theorem-13 discretisation of~\cite{GNNW}: on each interval of a partition of $[\lam_0,1]$, greedily from the left, the minimal slope $d$ admissible for the current $F$---tested in \emph{both} orientations, self-consistently, against $U=F+\eta$---together with a per-interval book parameter $M$ and pair $(X,Y)$; the sweep is iterated to convergence.  The mesh sequence $600,1200,2400,4800,9600$ gives $e^{F(1)}=3.77003$, $3.76943$, $3.76912$, $3.76897$, $3.768894$: clean first-order convergence, with Richardson limit $\approx3.76881$, so little is left on the table within this framework.
+
+(b) The \emph{proof object} is the exact scaled-integer certificate of Proposition~\ref{prop:cert}, exported by \texttt{pq\_export.py} from the converged fixed point on the $10\,560$-interval partition: nodal slopes and $M$ are rounded to the integer scales; the $F_j$ are recomputed by the exact chain~\eqref{eq:chain}; the $X_j,Y_j$ are rounded down; cells are subdivided (to the final $35\,770$) until every interval-arithmetic check passes with margin (admissibility margin $6\cdot10^{-7}$ per cell, slack margin $10^{-6}$); and the base value $F_0$ is raised by $2.08\cdot10^{-5}$ so that the tail inequality (T) holds.  The certified constant exceeds the raw fixed point by $7.8\cdot10^{-5}$ in total---the price of rounding, of freezing $(X,Y)$ per cell, and of the margins.
+
+(c) An \emph{independent check}: \texttt{verify\_pq.py}, a bit-exact Python mirror of the Lean checker (on top of \texttt{fpi.py}, an op-for-op port of the Lean fixed-point interval arithmetic), re-verifies the chain, every cell, the witness merge and the tail in about two minutes.  The strongest check, however, is the Lean kernel itself (Remark~\ref{rem:lean}): the formal development is self-contained and trusts none of the Python computations.
+
+The certified terminal value is the exact rational $F_N=2653604512524788171208898/(2\cdot10^{24})=1.32680225\ldots$, and the kernel-checked enclosure ($\exp$ of the halved argument by a degree-16 Taylor series with directed rounding, then squared) gives $e^{F_N}\le3.7689719<3.769$.
+
+\section{Both orientations, and two remarks}\label{sec:gap}
+
+\subsection*{The first version of~\cite{GNNW}}
+The first arXiv version of~\cite{GNNW} (v1, 26 July 2024) derives the admissible pairs from Lemma~14 there: if $\Ram(k,\ell)\le e^{\phi(\ell/k)k+o(k)}$ for all $\ell\le k$, with $\phi(\lam)=H(\lam)-\alpha\lam$, then $(x,e^{\alpha}(1-x))\in\mathcal R$ for $0<x<1/2$.  The proof first shows $\Ram(k,\ell)\le x^{-k-o(k)}y^{-\ell}$, $y=e^\alpha(1-x)$, for $\ell\le k$, and then asserts that for $x\le y$ ``$x^{-k-o(k)}y^{-\ell}\le x^{-\ell}y^{-k-o(k)}$'' in order to cover the pairs with $\ell>k$.  This inequality is reversed: for $x<y$ and $\ell<k$ one has $x^{-k}y^{-\ell}=x^{-\ell}y^{-k}(y/x)^{k-\ell}>x^{-\ell}y^{-k}$.  What the hypothesis gives for $\ell>k$ is $\Ram(k,\ell)\le\binom{k+\ell}\ell e^{-\alpha k}$, whereas $x^{-k}y^{-\ell}$ demands $e^{-\alpha\ell}$; the two differ by $e^{-\alpha(\ell-k)}$.  Numerically, in the last iteration of v1 (their $F_3$ with $\beta_3=0.03$ and $\alpha_3=(0.17-0.033)/e$, at $\lam=1$, where $(X,Y)=(0.23413,0.80546)$), one finds
+\[
+\min_{t>0}\bigl[-\log X-t\log Y-\Ft_2(t)\bigr]=-0.00115\quad\text{at }t\approx3.8,
+\]
+with $F_2$ the previously established bound: the pair is \emph{not} $F_2$-admissible, the violation occurring exactly in the orientation $\ell\approx3.8k$.  The second version (v2, 29 August 2026) acknowledges that the numerical derivation ``was incorrectly justified in the earliest public version'' and replaces Lemma~14 by Lemma~15, which handles both orientations (and coincides with Lemma~\ref{lem:legendre} above); it also reports a Lean~4 formalisation of the main results.  We add that the corrected framework confirms the constant of v1 directly: with $F_3=H+G$ and $M=\lam e^{-\lam}$, the self-consistent slack~\eqref{eq:SY} satisfies $\psi(1)=6.1\cdot10^{-4}>0$ and, numerically, $\psi>0$ on $(0,1]$ (with $Y(1)=0.80534$ instead of $0.80546$), so Theorem~\ref{thm:selfconsistent} re-proves~\eqref{eq:gnnw} without any chain of iterations.  In the certificate of Section~\ref{sec:cert} the point is structural: every cell carries one tangent witness \emph{per orientation}, so both orientations are tested for every cell.
+
+\subsection*{A proposed quintic correction}
+Appendix~A.2 of~\cite{HM} reports the function $F=H+e^{-\lam}(-0.25\lam+0.033\lam^2+0.08\lam^3-0.0778\lam^5)$, which would give $e^{F(1)}\approx3.6961$, obtained by an automated search within the framework of~\cite{GNNW}~v1.  For this $F$, with $Y$ the maximal $F$-admissible choice~\eqref{eq:SY} and $M$ optimised pointwise, one finds $\psi(1)=-0.094$ and $\psi<0$ on $[0.6,1]$: the function is not self-consistent, and no round of the bootstrap whose input bound dominates $F$ pointwise (in particular none starting from~\eqref{eq:gnnw}) can produce it.  This is consistent with the expectation in~\cite[Remark~17]{GNNW} that constants below $3.75$ would require new ideas.
+
+\subsection*{Possible improvements}
+Within the present framework the remaining gap is pure discretisation: the mesh sequence of Section~\ref{sec:computer} converges at first order to $\approx3.76881$, about $10^{-4}$ below the certified constant, so little is left.  It is worth recording that the two techniques of this paper subsume each other's gains.  Imposing the self-consistent linear tail on the discretised fixed point changes its value by less than $10^{-8}$---the greedy slope recursion is strongly attracting in the base value.  And restricting the admissibility requirement to the ratios $t\ge\lam$ actually consumed by (H1) (the pairs $(k',\ell)$ needed there have $k'\le k$) changes nothing: the binding ratio is $\approx3.8\lam$ throughout.  Genuinely better constants would have to come from the combinatorial part---e.g.\ a sharper key lemma.
+
+\section*{Code and data}\label{sec:code}
+All code is at \texttt{github.com/wamlat/RamseyLean-bootstrap}; the previous ($3.772$) revision is archived at DOI \texttt{10.5281/zenodo.22263824}, and the present revision lives on the branch \texttt{cert-3769} (to be merged and tagged), identified by the SHA-256 hashes below.  The Python verifier uses only the standard library.  Reproduction:
+\begin{center}\small
+\begin{tabular}{@{}ll@{}}
+\texttt{python3 verify\_pq.py pq\_cert\_final.json} & bit-exact mirror of the Lean checker, about 2 min\\
+\texttt{lake build RamseyLean.Bootstrap2.CertMain} & kernel verification, about six core-hours\\
+\end{tabular}
+\end{center}
+(the latter preceded by \texttt{lake exe cache get} and followed by \texttt{\#print axioms} on the three final theorems of Remark~\ref{rem:lean}).  The kernel build checks the $140$ chunk files of \texttt{Bootstrap2/CertData2} at about $128$\,MB peak memory per chunk, so the chunk targets parallelise freely.
+\begin{center}\scriptsize\ttfamily
+\begin{tabular}{@{}ll@{}}
+pq\_export.py & 0822413e2f8d99dd53ab0ac016ccffce46955068f182cd7c598e9c2e6862d309\\
+verify\_pq.py & 362731555535c8275aaffa9dafd3b08fa6d104c7e39f7ee176c4f6023ca83c22\\
+fpi.py & b01c4d07ac271ea74e104c652c639b04e64a99e4729a5b4bd8b1a4851f839f1f\\
+funcs.py & 237344ad8502f404573102446d90694695fd4f0e9eb5fdbfb00095ccdd2cf6ef\\
+pq\_cert\_final.json & 462cc882a82b08711347cb2af526ea54a46290f6088d1bf82cce66159d66ee1d\\
+opt.py & 0a91be491c4ac87d988c94f784cf27cc988fa9a8edff3ec858b55017690093ff\\
+opt2.py & 168fe19d9eb5c6e478a7d2e1b095c1eeaa991620753aed2ecefb2d9e431b5caa\\
+\end{tabular}
+\end{center}
+The Lean~4 formalisation (Remark~\ref{rem:lean}) consists of the shift ladder (\texttt{SelfConsistent.lean}, unchanged from the previous revision) and the directory \texttt{lean/Bootstrap2/}: the certificate data types and spline definitions, the analytic layer ($F$ from the data by integration, tangent bound, interpolant boxes), the cell checker with its soundness proof, the coverage, witness-merge and tail passes, the glue, and the $35\,770$-cell certificate data in $140$ chunk files.
+\begin{center}\scriptsize\ttfamily
+\begin{tabular}{@{}ll@{}}
+SelfConsistent.lean & e4b9e7780fc11ecac9e7f516e6e5f074abd60f884a1434269a1baee08b4a6143\\
+Bootstrap2/Defs.lean & e1999435791780a08e655a0436de2858f329a45d9aef5348d9d2fece0ad6e1cb\\
+Bootstrap2/Spline.lean & 95017cf347a0e6a969923343187a3dc2a61c370825846ce2acdd573b0f087132\\
+Bootstrap2/Check.lean & a954f59aa2da3cdb88c19c82435b4f252942ef8fc03f847824fe69ce04d4d43f\\
+Bootstrap2/Cover.lean & 28eaadb92c83b973816b1526c90ef6fa5e0477342882dbb021885d85bf0d12fe\\
+Bootstrap2/Glue.lean & 440000987f5cb4a934fec48eef146041b56295d31efa024391ee6ff5b9cc93f5\\
+Bootstrap2/Main2.lean & 7b709fbca384b94c92b8426909f4b119a31e0a81712ade5ac5e3891f0f21e048\\
+Bootstrap2/CertMain.lean & 20fd323b9ccfb7f1108bbd9c5e41c067291b7b700a92edceb697d7b76e5e9c74\\
+Bootstrap2/CertData2, concatenated & 2ee95b1bc491019c77ec9a4462a8446e76ae64456769948717f61531406d72fa\\
+\end{tabular}
+\end{center}
+The repository also retains, unchanged, the artefacts of the previous revision (the Arb~\cite{Arb} certificate, its two checkers, and the directory \texttt{lean/Bootstrap/}), and the scripts reproducing the numbers quoted in Section~\ref{sec:gap}.
+
+\begin{thebibliography}{99}
+\bibitem{Arb} F.~Johansson, \emph{Arb: efficient arbitrary-precision midpoint-radius interval arithmetic}, IEEE Trans.\ Comput.\ 66 (2017), 1281--1292.
+\bibitem{CGMS} M.~Campos, S.~Griffiths, R.~Morris, J.~Sahasrabudhe, \emph{An exponential improvement for diagonal Ramsey}, Ann.\ of Math.\ (2) 203 (2026); arXiv:2303.09521.
+\bibitem{ES} P.~Erd\H{o}s, G.~Szekeres, \emph{A combinatorial problem in geometry}, Compos.\ Math.\ 2 (1935), 463--470.
+\bibitem{GNNW} P.~Gupta, N.~Ndiaye, S.~Norin, L.~Wei, \emph{Optimizing the CGMS upper bound on Ramsey numbers}, arXiv:2407.19026 (v1: 26 July 2024; v2: 29 August 2026).
+\bibitem{HM} \emph{HorizonMath: Measuring AI progress toward mathematical discovery}, arXiv:2603.15617v1 (2026), Appendix~A.2.
+\bibitem{Ndi} N.~Ndiaye, \emph{Guarantee of cliques and uncertainty of trees: Ramsey theory and leaf powers}, PhD thesis, McGill University, 2025.
+\end{thebibliography}
+
+\end{document}
