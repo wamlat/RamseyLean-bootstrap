@@ -1,4 +1,4 @@
-# SHA-256 manifest, RamseyLean-bootstrap v2.0.1 (spline certificate, R(k,k) <= 3.769)
+# SHA-256 manifest, RamseyLean-bootstrap v2.0.2 (spline certificate, R(k,k) <= 3.769)
 # Verify: shasum -a 256 -c MANIFEST-v2.sha256  (comment lines are ignored)
 # Aggregate (not a file): cat RamseyLean/Bootstrap2/CertData2/Chunk*.lean RamseyLean/Bootstrap2/CertData2/CertData2.lean | shasum -a 256 =
 # 2ee95b1bc491019c77ec9a4462a8446e76ae64456769948717f61531406d72fa  -
@@ -19,7 +19,7 @@ b01c4d07ac271ea74e104c652c639b04e64a99e4729a5b4bd8b1a4851f839f1f  code2/fpi.py
 462cc882a82b08711347cb2af526ea54a46290f6088d1bf82cce66159d66ee1d  code2/pq_cert_final.json
 0822413e2f8d99dd53ab0ac016ccffce46955068f182cd7c598e9c2e6862d309  code2/pq_export.py
 362731555535c8275aaffa9dafd3b08fa6d104c7e39f7ee176c4f6023ca83c22  code2/verify_pq.py
-2ce0a84bd4a4272a5818f74bf8cb9cba25628c9baed550ea9a4a8f2e0ef0d944  paper/main.tex
-262b16bb3f074b6f322fa64f128577ad3ba9a40a6cecb1c49f8368abf6099235  paper/main.pdf
+4a872229a1bb2af4ab0f8faa62700111a5e8851dbde40971ac6505ec84f5126e  paper/main.tex
+ed43a405a61e17d1c4839ec3aab4a090e1cc4b2aa0ab0cd3c9169a153ea789cc  paper/main.pdf
 063da2c0750972b5badc105380852891396f27f43f1b2763108a35a2f1503c1d  verification/cleanverify-x86-64.log
 fa4399b0b5e2482bc85bfd3f336b9a3295eeae7d62afcba86cfe2c50ec7bb602  verification/development-run-aws.log

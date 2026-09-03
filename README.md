@@ -1,6 +1,6 @@
 # R(k,k) ≤ 3.769^(k+o(k)), formalized in Lean 4
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22263824.svg)](https://doi.org/10.5281/zenodo.22263824)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22263823.svg)](https://doi.org/10.5281/zenodo.22263823)
 
 This repository contains a complete, kernel-checked Lean 4 formalization of
 the currently best known upper bound on diagonal Ramsey numbers,
@@ -11,8 +11,8 @@ obtained by running the *self-consistent bootstrap* of the accompanying paper
 (a follow-up to Gupta–Ndiaye–Norin–Wei, arXiv:2407.19026) on a free-form
 piecewise-quadratic rate function: a 35,770-cell exact-integer **spline
 certificate** replaces the closed-form ansatz of the previous revision
-(R(k,k) ≤ 3.77176^(k+o(k)), archived at the DOI above and tag
-`v1.0-ramsey-3.7718`).
+(R(k,k) ≤ 3.77176^(k+o(k)), tag `v1.0-ramsey-3.7718`). The badge above is the concept DOI and always
+resolves to the latest archived version; all version DOIs are listed there.
 
 It is built directly on top of the
 [RamseyLean](https://github.com/snorin239/RamseyLean) development of
