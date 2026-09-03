@@ -13,6 +13,21 @@ piecewise-quadratic rate function, certified by a 35,770-cell exact-integer
 **spline certificate**. The badge above is the concept DOI and always
 resolves to the latest archived version; all version DOIs are listed there.
 
+## Key artifacts
+
+| What | Where |
+|---|---|
+| **The three final theorems** (statements + `#print axioms`) | [`RamseyLean/Bootstrap2/CertMain.lean`](RamseyLean/Bootstrap2/CertMain.lean) |
+| **Commit of record** (the tree that was clean-clone verified) | `23572c09b53e468e03d2de2213b2ab038ecbf0c4` — tag [`v2.0-ramsey-3.769`](../../releases/tag/v2.0-ramsey-3.769); current release [`v2.0.2`](../../releases/tag/v2.0.2) |
+| **Machine-of-record verification log** (full build + axiom audit from a fresh clone) | [`verification/cleanverify-x86-64.log`](verification/cleanverify-x86-64.log) |
+| **The paper** (current revision, bound 3.769) | [`paper/main.pdf`](paper/main.pdf) (source: [`paper/main.tex`](paper/main.tex)) |
+| **The certificate** (35,770 cells, exact integers — the proof object) | [`code2/pq_cert_final.json`](code2/pq_cert_final.json); as Lean data: [`RamseyLean/Bootstrap2/CertData2/`](RamseyLean/Bootstrap2/CertData2) |
+| **2-minute independent replay** (bit-exact Python mirror, stdlib only) | [`code2/verify_pq.py`](code2/verify_pq.py) |
+| **The shift-ladder theorem** (self-consistency; paper Thm 4.2) | [`RamseyLean/SelfConsistent.lean`](RamseyLean/SelfConsistent.lean) |
+| **The one-line change to upstream** (`X = …` → `X ≤ …`) | [`RamseyLean/Descent.lean`](RamseyLean/Descent.lean), hypothesis `hXle` |
+| **CI** (kernel re-verification on demand) | [`.github/workflows/bootstrap2.yml`](.github/workflows/bootstrap2.yml) |
+| **Permanent archive** | [DOI 10.5281/zenodo.22263823](https://doi.org/10.5281/zenodo.22263823) (concept DOI → latest version) |
+
 It is built directly on top of the
 [RamseyLean](https://github.com/snorin239/RamseyLean) development of
 **Gupta, Ndiaye, Norin and Wei**, which formalizes the CGMS book algorithm
