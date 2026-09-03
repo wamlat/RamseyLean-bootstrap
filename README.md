@@ -1,5 +1,7 @@
 # R(k,k) ≤ 3.77176…^(k+o(k)), formalized in Lean 4
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22263824.svg)](https://doi.org/10.5281/zenodo.22263824)
+
 This repository contains a complete, kernel-checked Lean 4 formalization of
 the currently best known upper bound on diagonal Ramsey numbers,
 
