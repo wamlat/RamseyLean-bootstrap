@@ -4,8 +4,15 @@ on:
   push:
     branches: [master]
     paths:
-      - "RamseyLean/Bootstrap2/**"
-      - "RamseyLean/SelfConsistent.lean"
+      - "RamseyLean/**/*.lean"
+      - lakefile.toml
+      - lake-manifest.json
+      - lean-toolchain
+      - ".github/workflows/bootstrap2.yml"
+  pull_request:
+    branches: [master]
+    paths:
+      - "RamseyLean/**/*.lean"
       - lakefile.toml
       - lake-manifest.json
       - lean-toolchain
@@ -67,7 +74,14 @@ jobs:
           #print axioms RamseyLean.Bootstrap2.main_bootstrap2
           #print axioms RamseyLean.Bootstrap2.bootstrap2_diagonal
           #print axioms RamseyLean.Bootstrap2.bootstrap2_diagonal_num
+          #print axioms RamseyLean.Bootstrap2.exp_FN_le_sharp
           EOF
           lake env lean /tmp/axprobe.lean | tee /tmp/axioms.txt
-          grep -c "propext, Classical.choice, Quot.sound" /tmp/axioms.txt | grep -q '^3$'
-          ! grep -qiE "sorry|native_decide" /tmp/axioms.txt
+          cat > /tmp/expected.txt <<'EOF'
+          'RamseyLean.Bootstrap2.main_bootstrap2' depends on axioms: [propext, Classical.choice, Quot.sound]
+          'RamseyLean.Bootstrap2.bootstrap2_diagonal' depends on axioms: [propext, Classical.choice, Quot.sound]
+          'RamseyLean.Bootstrap2.bootstrap2_diagonal_num' depends on axioms: [propext, Classical.choice, Quot.sound]
+          'RamseyLean.Bootstrap2.exp_FN_le_sharp' depends on axioms: [propext, Classical.choice, Quot.sound]
+          EOF
+          sed 's/^          //' /tmp/expected.txt > /tmp/expected2.txt
+          diff /tmp/expected2.txt /tmp/axioms.txt

@@ -110,6 +110,39 @@ theorem exp_FN_le :
         exact div_le_div_of_nonneg_right (by exact_mod_cast hb) hsc.le
     _ = 37690 / 10000 := by norm_num [value, scale]
 
+/-- The sharp enclosure `exp F_N ≤ 3.7689719`, kernel-checked the same way
+(no `+10⁻⁶` slack; this is the certified constant quoted in the paper). -/
+theorem exp_FN_le_sharp :
+    Real.exp ((2653604512524788171208898 : ℝ) / (2 * 10 ^ 24)) ≤
+      37689719 / 10000000 := by
+  set x : ℝ := (2653604512524788171208898 : ℝ) / (2 * 10 ^ 24) with hx
+  set Ih : Interval := divNat (fpt 2653604512524788171208898) 2 with hIhdef
+  set E : Interval := exp 16 Ih with hEdef
+  have hI : (fpt 2653604512524788171208898).Contains x := by
+    have h := fpt_contains 2653604512524788171208898
+    have hval : ((2653604512524788171208898 : ℤ) : ℝ) / ((FS : ℤ) : ℝ) = x := by
+      rw [hx]; norm_num [FS]
+    rwa [hval] at h
+  have hIh : Ih.Contains (x / 2) := by
+    have := hI.divNat (k := 2) (by norm_num)
+    rw [hIhdef]
+    simpa [div_eq_mul_inv] using this
+  have hsafe : expSafe 16 Ih = true := by rw [hIhdef]; decide +kernel
+  have hE : E.Contains (Real.exp (x / 2)) := contains_exp_of_safe hIh hsafe
+  have hE2 := hE.mul hE
+  rw [← Real.exp_add] at hE2
+  have hxx : x / 2 + x / 2 = x := by ring
+  rw [hxx] at hE2
+  refine hE2.2.trans ?_
+  have hb : (mul E E).hi ≤ 3768971900000 := by
+    rw [hEdef, hIhdef]; decide +kernel
+  calc value ((mul E E).hi)
+      ≤ value 3768971900000 := by
+        unfold value
+        have hsc : (0:ℝ) < (scale : ℝ) := scale_pos_real
+        exact div_le_div_of_nonneg_right (by exact_mod_cast hb) hsc.le
+    _ = 37689719 / 10000000 := by norm_num [value, scale]
+
 /-- **Numeric diagonal corollary**: `R(k,k) ≤ 3.7690^k` for all large `k`. -/
 theorem bootstrap2_diagonal_num :
     ∀ᶠ k : ℕ in atTop,

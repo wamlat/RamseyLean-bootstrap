@@ -54,8 +54,11 @@ enclosure `exp(F(1) + 10⁻⁶) ≤ 3.7690`.)
 No `sorry`. No `native_decide` (every certificate cell is checked by the Lean
 kernel itself). Axioms are exactly Mathlib's standard three.
 
-**Commit of record:** `23572c09b53e468e03d2de2213b2ab038ecbf0c4` (commits
-after it are documentation and artifacts only).
+**Commit of record:** `23572c09b53e468e03d2de2213b2ab038ecbf0c4` for the
+three final theorems (clean-clone verified; later commits are documentation
+and artifacts, except the auxiliary sharp-enclosure theorem
+`exp_FN_le_sharp` — `exp F(1) ≤ 3.7689719` — added in v2.0.1 and verified by
+this repository's CI).
 Toolchain: `leanprover/lean4:v4.32.1`, Mathlib as pinned in
 `lake-manifest.json`. Clean-clone verification logs (Ubuntu 22.04 x86-64,
 AMD EPYC Genoa: full build + axiom audit from a fresh clone of the commit of
