@@ -26,7 +26,7 @@ set_option maxHeartbeats 1000000000
 namespace RamseyLean
 namespace Bootstrap2
 
-open Set Filter CertData2
+open Set Filter CertData2 FixedPointInterval FixedPointInterval.Interval FixedPointInterval.Sound
 
 /-- Every cell passes `checkCell`. -/
 theorem allCells_check : allCells.all checkCell = true := by
@@ -77,42 +77,33 @@ theorem exp_FN_le :
       37690 / 10000 := by
   set x : ℝ := (2653604512524788171208898 : ℝ) / (2 * 10 ^ 24) + 1 / 1000000
     with hx
-  have hI : (add (fpt 2653604512524788171208898)
-      (Interval.point 1000000)).Contains x := by
-    have h1 := fpt_contains 2653604512524788171208898
-    have h2 := contains_point (1000000 : Int)
-    have := h1.add h2
-    convert this using 2
-    · norm_num [FS]
-    · show (1 : ℝ) / 1000000 = value 1000000
-      norm_num [value, scale]
-  have hIh : ((add (fpt 2653604512524788171208898)
-      (Interval.point 1000000)).divNat 2).Contains (x / 2) := by
+  set I0 : Interval := add (fpt 2653604512524788171208898) (point 1000000)
+    with hI0
+  set Ih : Interval := divNat I0 2 with hIhdef
+  set E : Interval := exp 16 Ih with hEdef
+  have hI : I0.Contains x := by
+    have h12 := (fpt_contains 2653604512524788171208898).add
+      (contains_point (1000000 : Int))
+    have hval : ((2653604512524788171208898 : ℤ) : ℝ) / ((FS : ℤ) : ℝ) +
+        value 1000000 = x := by
+      rw [hx]
+      norm_num [FS, value, scale]
+    rw [hI0]
+    rwa [hval] at h12
+  have hIh : Ih.Contains (x / 2) := by
     have := hI.divNat (k := 2) (by norm_num)
+    rw [hIhdef]
     simpa [div_eq_mul_inv] using this
-  have hsafe : expSafe 16 ((add (fpt 2653604512524788171208898)
-      (Interval.point 1000000)).divNat 2) = true := by decide +kernel
-  have hE := contains_exp_of_safe hIh hsafe
+  have hsafe : expSafe 16 Ih = true := by rw [hIhdef, hI0]; decide +kernel
+  have hE : E.Contains (Real.exp (x / 2)) := contains_exp_of_safe hIh hsafe
   have hE2 := hE.mul hE
   rw [← Real.exp_add] at hE2
   have hxx : x / 2 + x / 2 = x := by ring
   rw [hxx] at hE2
-  have hhi : Real.exp x ≤ value ((mul
-      (exp 16 ((add (fpt 2653604512524788171208898)
-        (Interval.point 1000000)).divNat 2))
-      (exp 16 ((add (fpt 2653604512524788171208898)
-        (Interval.point 1000000)).divNat 2))).hi) := hE2.2
-  refine hhi.trans ?_
-  have hb : (mul
-      (exp 16 ((add (fpt 2653604512524788171208898)
-        (Interval.point 1000000)).divNat 2))
-      (exp 16 ((add (fpt 2653604512524788171208898)
-        (Interval.point 1000000)).divNat 2))).hi ≤ 3769000000000 := by
-    decide +kernel
-  calc value ((mul (exp 16 ((add (fpt 2653604512524788171208898)
-          (Interval.point 1000000)).divNat 2))
-        (exp 16 ((add (fpt 2653604512524788171208898)
-          (Interval.point 1000000)).divNat 2))).hi)
+  refine hE2.2.trans ?_
+  have hb : (mul E E).hi ≤ 3769000000000 := by
+    rw [hEdef, hIhdef, hI0]; decide +kernel
+  calc value ((mul E E).hi)
       ≤ value 3769000000000 := by
         unfold value
         have hsc : (0:ℝ) < (scale : ℝ) := scale_pos_real
@@ -130,7 +121,7 @@ theorem bootstrap2_diagonal_num :
       ((2653604512524788171208898 : ℝ) / (2 * 10 ^ 24) + 1 / 1000000) := by
     ring
   rw [hrw, Real.exp_nat_mul]
-  exact pow_le_pow_left (Real.exp_pos _).le exp_FN_le k
+  exact pow_le_pow_left₀ (Real.exp_pos _).le exp_FN_le k
 
 end Bootstrap2
 end RamseyLean
