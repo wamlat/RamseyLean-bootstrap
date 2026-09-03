@@ -1,163 +1,121 @@
-# Optimizing the CGMS upper bound on Ramsey numbers in Lean
+# R(k,k) ≤ 3.77176…^(k+o(k)), formalized in Lean 4
 
-This repository contains a Lean 4 + Mathlib formalization of Theorem 1 and
-Corollary 6 of Parth Gupta, Ndiamé Ndiaye, Sergey Norin, and Louis Wei,
-[*Optimizing the CGMS upper bound on Ramsey
-numbers*](paper/main.pdf). The bundled PDF is the source for all statement
-wording and numbering below.
+This repository contains a complete, kernel-checked Lean 4 formalization of
+the currently best known upper bound on diagonal Ramsey numbers,
 
-## The statements being formalized
+$$R(k,k) \le \bigl(4e^{-0.159705/e}\bigr)^{k+o(k)} = 3.77176\ldots^{\,k+o(k)},$$
 
-The Ramsey number `R(k, ℓ)` is the least `N` such that every red-blue coloring
-of the complete graph on `N` vertices contains either a red `K_k` or a blue
-`K_ℓ`. The development represents a coloring by its red graph, with blue edges
-given by the complement:
+obtained by the *self-consistent bootstrap* of the accompanying paper
+(a follow-up to Gupta–Ndiaye–Norin–Wei, arXiv:2407.19026).
 
-```lean
-def RamseyBound (k ℓ N : ℕ) : Prop :=
-  ∀ G : SimpleGraph (Fin N),
-    hasRedClique G Finset.univ k ∨ hasBlueClique G Finset.univ ℓ
+It is built directly on top of the
+[RamseyLean](https://github.com/snorin239/RamseyLean) development of
+**Gupta, Ndiaye, Norin and Wei**, which formalizes the CGMS book algorithm
+and their one-round descent theorem — see [README-GNNW.md](README-GNNW.md)
+for their original documentation. The **only change to their code** is the
+relaxation of one identity (`X = …`) to an inequality (`X ≤ …`) in
+`RamseyLean/Descent.lean`, whose proof already used only the inequality.
 
-noncomputable def ramseyNumber (k ℓ : ℕ) : ℕ := by
-  classical
-  exact Nat.find (exists_ramseyBound k ℓ)
-
-def ramseyLinearScale (k : ℕ) : ℝ := k
-
-def SublinearError (η : ℕ → ℝ) : Prop :=
-  η =o[atTop] ramseyLinearScale
-```
-
-Thus `SublinearError η` says that `η(k) = o(k)` as `k → ∞`.
-
-### Theorem 1
-
-For all positive integers `ℓ ≤ k`,
-
-$$
-R(k,\ell) \leq
-\exp\!\left(G(\ell/k)k+o(k)\right)\binom{k+\ell}{\ell},
-\qquad
-G(\lambda)=\left(-\frac14\lambda+\frac{3}{100}\lambda^2
-+\frac{2}{25}\lambda^3\right)e^{-\lambda}.
-$$
-
-The Lean theorem makes the uniform meaning of `o(k)` explicit: a single error
-function `η`, independent of `ℓ`, works simultaneously for every positive
-`ℓ ≤ k`.
+## The final theorems
 
 ```lean
-theorem main :
-    ∃ η : ℕ → ℝ,
-      SublinearError η ∧
-      ∀ k ℓ : ℕ, 0 < ℓ → ℓ ≤ k →
-        (ramseyNumber k ℓ : ℝ) ≤
-          Real.exp
-              (((-(1 / 4 : ℝ) * ((ℓ : ℝ) / (k : ℝ)) +
-                    (3 / 100 : ℝ) * ((ℓ : ℝ) / (k : ℝ)) ^ 2 +
-                    (2 / 25 : ℝ) * ((ℓ : ℝ) / (k : ℝ)) ^ 3) *
-                  Real.exp (-((ℓ : ℝ) / (k : ℝ)))) *
-                (k : ℝ) + η k) *
-            (Nat.choose (k + ℓ) ℓ : ℝ)
+theorem RamseyLean.Bootstrap.main_bootstrap : UniformRamseyExpBound Fpaper
+
+theorem RamseyLean.Bootstrap.bootstrap_diagonal :
+    ∀ ε > 0, ∀ᶠ k in atTop,
+      (ramseyNumber k k : ℝ) ≤
+        Real.exp ((2 * Real.log 2 - (159705/1000000) * Real.exp (-1) + ε) * k)
 ```
 
-The decimal coefficients in the paper are represented by the exact rational
-numbers `1/4`, `3/100`, and `2/25`.
+(`2 log 2 − 0.159705·e⁻¹ = log 3.77176…`; see `Bootstrap/Main.lean` for the
+exact statements.)
 
-### Corollary 6
+```
+#print axioms RamseyLean.Bootstrap.main_bootstrap
+-- [propext, Classical.choice, Quot.sound]
+#print axioms RamseyLean.Bootstrap.bootstrap_diagonal
+-- [propext, Classical.choice, Quot.sound]
+```
 
-For all positive integers `ℓ ≤ k`,
+No `sorry`. No `native_decide` (every certificate cell is checked by the Lean
+kernel itself). Axioms are exactly Mathlib's standard three.
 
-$$
-R(k,\ell) \leq
-4(k+\ell)
-\left(\frac{(\sqrt5+1)(k+2\ell)}{4\ell}\right)^\ell
-\left(\frac{k+2\ell}{k}\right)^{k/2}.
-$$
+**Commit of record:** `bdcc37109f31ae7b585743aa9dcf257773e5afb2`
+(tag [`v1.0-ramsey-3.7718`](../../releases/tag/v1.0-ramsey-3.7718); commits
+after it are documentation only).
+Toolchain: `leanprover/lean4:v4.32.1`, Mathlib `520045ab14e2…`.
+The [release](../../releases/tag/v1.0-ramsey-3.7718) attaches the clean-clone
+verification log (x86-64 Linux; also reproduced on arm64 macOS with
+bit-identical integer enclosures), the full SHA-256 manifest
+(`aab28ccb4b558a07f91de355d71414cdd1b30f6e1ecd8a3241f941d0b5125b33`), and a
+referee-oriented verification guide (`SUBMISSION.md`).
 
-Its printed statement is exposed directly as follows:
+## How to verify
+
+```bash
+git clone https://github.com/wamlat/RamseyLean-bootstrap && cd RamseyLean-bootstrap
+lake exe cache get                       # Mathlib binaries (~2 GB)
+./batchbuild.sh                          # memory-capped build; or see note below
+```
+
+then
 
 ```lean
-theorem ramseyNumber_le_easy_optimized {k ℓ : ℕ}
-    (hℓ : 0 < ℓ) (hℓk : ℓ ≤ k) :
-    (ramseyNumber k ℓ : ℝ) ≤
-      4 * ((k : ℝ) + (ℓ : ℝ)) *
-        (((Real.sqrt 5 + 1) * ((k : ℝ) + 2 * (ℓ : ℝ))) /
-          (4 * (ℓ : ℝ))) ^ ℓ *
-        (((k : ℝ) + 2 * (ℓ : ℝ)) / (k : ℝ)) ^ ((k : ℝ) / 2)
+import RamseyLean.Bootstrap.Main
+#print axioms RamseyLean.Bootstrap.main_bootstrap
+#print axioms RamseyLean.Bootstrap.bootstrap_diagonal
 ```
 
-The power indexed by `ℓ` is a natural power. The final power is `Real.rpow`,
-as required by the real exponent `k/2`, including when `k` is odd.
+> **Memory note.** Kernel-checking a certificate chunk file retains
+> ≈ 3.4 GB + 40 MB/cell within the file (≈ 5.3 GB per 48-cell chunk), and this
+> Lake version has no concurrency cap. A plain
+> `lake build RamseyLean.Bootstrap.Main` will run one kernel job per core and
+> can exhaust RAM on smaller machines. `batchbuild.sh` builds the chunk
+> targets `K` at a time (`K ≈ RAM / 5.3 GB`; default 3). Total work is about
+> six core-hours (measured: 20 min on 16 EPYC cores).
 
-## Structure of the proof
+## Where everything is
 
-1. **Finite graph foundations.** Ramsey bounds are defined using a graph and
-   its complement, and the usual recurrence and finite counting identities
-   are proved.
-2. **The elementary excess argument.** Candidate and excess inequalities are
-   combined with a deterministic weighted bipartition argument to prove
-   Corollary 6.
-3. **Book induction.** Generalized binomial estimates, blue-book extraction,
-   degree regularization, and uniform asymptotic bounds provide the main
-   book-induction result.
-4. **Descent and the frontier.** Dense and sparse cases are assembled into a
-   uniform descent theorem, and a concave frontier construction feeds stronger
-   Ramsey bounds into a second descent.
-5. **Certified numerical optimization.** Independently selected parameters and
-   kernel-checked interval certificates establish the exponential correction
-   in Theorem 1.
-6. **Final assembly.** A uniform one-sided Stirling estimate converts the
-   exponential entropy bound into the binomial form stated in Theorem 1.
+### The new development (this work)
 
-The intermediate results from the manuscript are sometimes strengthened,
-generalized, or replaced by sufficient statements better suited to Lean; see
-[`FORMALIZATION.md`](FORMALIZATION.md) for the paper-to-Lean map.
+| File | Contents |
+|---|---|
+| `RamseyLean/SelfConsistent.lean` | The **shift-ladder theorem** (paper Thm 4.2): `uniformRamseyExpBound_selfConsistent` — a bound may define its own admissible pair; rungs `F + log 4/2^j (1+r)` descend from Erdős–Szekeres |
+| `RamseyLean/Bootstrap/Defs.lean` | The paper's explicit functions with **exact rational coefficients**: `Fpaper = entropy + e^{−r}·Ppaper` (degree-8 `P`), `Dpaper = F′`, `D2paper = F″`, `Qpaper`, `Mpaper`, `Xpaper`; the split point `lam0 = 2^{-20}`; the inter-layer interface (`LadderFactsAt`, `TangentUB`, `MonoUB`) |
+| `RamseyLean/Bootstrap/Analytic.lean` | Derivative formulas (`hasDerivAt_Fpaper/Dpaper`), continuity, tangent-line bound from `F″ < 0`, monotone bound from `F′ > 0`, `F ≥ 0` via `F → 0` at `0⁺`, `X ∈ (0,1)`, the `log X` splitting formula |
+| `RamseyLean/Bootstrap/Reduction.lean` | The **kink inequality**: `F(1) ≤ 2F′(1)` reduces to the rational fact `3P(1) ≤ 2P′(1)` (entropy terms cancel) and extends to `F(u) ≤ (1+u)F′(u)` on `(0,1]` by monotonicity; the three tangent-witness admissibility cases (`t* < 1`, `t* > 1`, kink) each reduced to one inequality per cell; the packaging lemma producing the admissible `Y` |
+| `RamseyLean/Bootstrap/SmallLambda.lean` | The **small-λ lemma** (paper Lemma 5.3) proved by hand on `(0, 2^{-20}]`: `F′ > 0`, `F″ < 0`, `M, X ∈ (0,1)`, and an admissible `Y` with dense-case slack `ψ ≥ 0.13λ` — explicit constant chains, no certificate |
+| `RamseyLean/Bootstrap/CertCheck.lean` | The **certificate checker**: exact-integer interval evaluators for `F, F′, F″, M, log X` over a cell (mean-value polynomial forms; `log` range reduction `log q = log(q·2^k) − k·log 2`; `exp d = (exp(d/16))^{16}`), the Bool-valued `checkCell`/`checkCellFast`, and the soundness theorems `checkCell_sound` / `checkCover_sound` tying `true` to the real-valued facts |
+| `RamseyLean/Bootstrap/CertData.lean` + `CertData/Chunk001–389.lean` | The **certificate data**: 18,640 cells covering `[2^{-20}, 1]` (12,203 case-A + 4,078 case-B + 2,359 kink witnesses), 48 cells per file, each file kernel-checked by `decide +kernel`; the assembly proves `allCells_ok` and the contiguous-coverage chain |
+| `RamseyLean/Bootstrap/Cert.lean` | Assembles checker + data into the two region theorems `cert_derivFacts`, `cert_ladderFacts` |
+| `RamseyLean/Bootstrap/Main.lean` | The **glue**: combines the small-λ and certificate regions, applies the shift ladder, and derives `main_bootstrap` and the diagonal corollary `bootstrap_diagonal` (with `Fpaper_one : Fpaper 1 = 2 log 2 − 0.159705·e⁻¹`) |
+| `batchbuild.sh` | Memory-capped build driver (see note above) |
+| `RamseyLean/Bootstrap/CELLSPEC.md`, `APINOTES.md` | Development notes: the cell-checker specification shared with the certificate generator, and a catalogue of the upstream API |
 
-## Certified numerical optimization
+### Upstream (Gupta–Ndiaye–Norin–Wei; see README-GNNW.md)
 
-The numerical optimization was redone independently for this formalization.
-The manuscript's Mathematica-assisted certificate is not imported as proof
-evidence. Instead, the development proves soundness theorems for fixed-point
-interval arithmetic, Taylor enclosures, and outward rounding. Certificate
-endpoints and checker decisions are exact integers; floating-point sampling
-was used only to choose parameters and meshes. Every inequality used to reach
-Theorem 1 is ultimately checked by Lean's kernel.
+| Path | Contents |
+|---|---|
+| `RamseyLean/Descent.lean` | The one-round descent theorem `uniformRamseyExpBound_of_descent` (their Thm 14) and `denseCaseExponent` — the combinatorial engine this work plugs into |
+| `RamseyLean/BookInduction.lean`, `Candidate.lean`, `Counting.lean`, … | The CGMS book-algorithm formalization |
+| `RamseyLean/AsymptoticRegion.lean`, `Asymptotics/` | `UniformRamseyExpBound` (the meaning of a "valid bound", with explicit `o(k)` error) |
+| `RamseyLean/Analysis/FixedPointInterval.lean` | Exact-integer interval arithmetic at scale `10^{12}` with proved `exp`/`log` enclosures — the foundation of `CertCheck.lean` |
+| `RamseyLean/Numerics/` | Their own two-round certificates (independent of this work's) |
 
-## Scope
+### Reading list for a statement audit (~30 min)
 
-The repository formalizes Theorem 1 and Corollary 6 together with the results
-needed for their proofs. Remark 17, including its preliminary unverified
-further optimization, and Section 5 (Observation 18 through Remark 22) are
-intentionally outside scope.
+To confirm the formal statements say what the headline claims, read only:
+1. `RamseyLean/Ramsey.lean` — the definition of `ramseyNumber`;
+2. `RamseyLean/AsymptoticRegion.lean` — `UniformRamseyExpBound`;
+3. `RamseyLean/Bootstrap/Defs.lean` — the coefficients (compare with Table 1 of the paper);
+4. `RamseyLean/Bootstrap/Main.lean` — the two final theorems.
 
-## Building
+Everything else is internal machinery whose correctness the kernel enforces.
 
-The project pins Lean and Mathlib to `v4.32.1`. After installing
-[Elan](https://lean-lang.org/install/) and Git, run from the repository root:
+## Related artifacts
 
-```text
-lake exe cache get
-lake build
-```
-
-The root target checks the complete formalization, including the concrete
-numerical certificates. No external numerical program or untrusted generated
-output is needed during the build.
-
-## Verification
-
-The full `lake build` succeeds. The Lean source contains no `sorry`, `admit`,
-or user-declared placeholder axioms. For both `RamseyLean.main` and
-`RamseyLean.ramseyNumber_le_easy_optimized`, `#print axioms` reports only
-`propext`, `Classical.choice`, and `Quot.sound`.
-
-The latest clean Ubuntu 24.04 validation completed successfully on August 17,
-2026: all 3,995 Lake jobs succeeded in 5 h 28 min of wall-clock time. The
-[GitHub Actions run](https://github.com/snorin239/RamseyLean/actions/runs/31980959440)
-records the complete build.
-
-## Attribution
-
-This formalization, including its documentation, was produced by OpenAI Codex
-(GPT-5.6 Sol, Ultra reasoning), with minimal guidance from the paper's authors.
+The paper source, the original Arb/mpmath numerical certificates (an
+independent verification of the same inequalities), the Python generator for
+the Lean certificate data, and the full manifest are archived with the
+[release](../../releases/tag/v1.0-ramsey-3.7718) and in the paper's
+"Code and data" section.
