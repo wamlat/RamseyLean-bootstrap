@@ -408,6 +408,7 @@ set_option maxRecDepth 100000
 private theorem all_append_of {α : Type} {f : α → Bool} {a b : List α}
     (ha : a.all f = true) (hb : b.all f = true) : (a ++ b).all f = true := by
   rw [List.all_append, ha, hb]
+  rfl
 
 theorem allCells_ok : allCells.all checkCellFast = true := by
   unfold allCells
