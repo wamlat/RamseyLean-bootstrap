@@ -9,9 +9,8 @@ $$R(k,k) \le 3.76898\ldots^{\,k+o(k)} \le 3.769^{\,k+o(k)},$$
 
 obtained by running the *self-consistent bootstrap* of the accompanying paper
 (a follow-up to Gupta–Ndiaye–Norin–Wei, arXiv:2407.19026) on a free-form
-piecewise-quadratic rate function: a 35,770-cell exact-integer **spline
-certificate** replaces the closed-form ansatz of the previous revision
-(R(k,k) ≤ 3.77176^(k+o(k)), tag `v1.0-ramsey-3.7718`). The badge above is the concept DOI and always
+piecewise-quadratic rate function, certified by a 35,770-cell exact-integer
+**spline certificate**. The badge above is the concept DOI and always
 resolves to the latest archived version; all version DOIs are listed there.
 
 It is built directly on top of the
@@ -96,11 +95,11 @@ cd code2 && python3 verify_pq.py pq_cert_final.json   # standard library only
 
 ## Where everything is
 
-### The spline certificate development (this revision)
+### The spline certificate development
 
 | File | Contents |
 |---|---|
-| `RamseyLean/SelfConsistent.lean` | The **shift-ladder theorem** (paper Thm 4.2): `uniformRamseyExpBound_selfConsistent` — a bound may define its own admissible pair; unchanged from the previous revision |
+| `RamseyLean/SelfConsistent.lean` | The **shift-ladder theorem** (paper Thm 4.2): `uniformRamseyExpBound_selfConsistent` — a bound may define its own admissible pair |
 | `RamseyLean/Bootstrap2/Defs.lean` | Certificate data types (`Node`, `Cell`, scales `10^12` / `2·10^24`) and the data-defined functions: `Dcert`/`Mcert` piecewise-linear clamped interpolants, `Fcert := F₀ + ∫D`, step functions `Xcert`/`Ycert`; the interface predicate `LadderHypsAt` |
 | `RamseyLean/Bootstrap2/Spline.lean` | The analytic layer: continuity, `HasDerivAt (Fcert …) (Dcert …)` by FTC, exact node values from the integer trapezoid chain, `D`-antitonicity ⇒ global tangent bound and chord bound, interpolant boxes, tail clamping |
 | `RamseyLean/Bootstrap2/Check.lean` | The **cell checker**: Bool-valued `checkCell`/`checkCellFast` (36 conjuncts: chain identity, X-formula over the cell box, tangent-witness admissibility in both orientations, two-endpoint ψ check with quadratic dip bound), global passes `checkChain`/`checkWitnesses`/`checkTail`, all soundness theorems |
@@ -112,18 +111,6 @@ cd code2 && python3 verify_pq.py pq_cert_final.json   # standard library only
 | `code2/` | Generator and verifier: `opt.py`/`opt2.py` (fixed-point optimizer, discovery only), `pq_export.py` (exact-integer export incl. witnesses), `verify_pq.py` + `fpi.py` (bit-exact mirror of the Lean checker), `pq_cert_final.json` (the certificate), `emit_chunks.py` |
 | `paper/` | The paper (current revision, bound 3.769) |
 | `verification/` | Machine-of-record build/axiom-audit logs |
-
-### The previous revision (bound 3.77176, closed-form ansatz)
-
-`RamseyLean/Bootstrap/` (Defs/Analytic/Reduction/SmallLambda/CertCheck/
-CertData/Cert/Main + 389 chunk files) is kept intact: it proves
-`RamseyLean.Bootstrap.main_bootstrap` and `bootstrap_diagonal`
-(R(k,k) ≤ 3.77176…^(k+o(k))) from a degree-8 ansatz with an 18,640-cell
-certificate and a hand-proved small-λ lemma. Tag
-[`v1.0-ramsey-3.7718`](../../releases/tag/v1.0-ramsey-3.7718), archived at
-the Zenodo DOI above. The spline certificate of this revision eliminates
-both the ansatz and the small-λ analysis (self-consistency lets the
-certificate extend linearly below λ₀ = 10⁻⁴ at the cost of one inequality).
 
 ### Upstream (Gupta–Ndiaye–Norin–Wei; see README-GNNW.md)
 
