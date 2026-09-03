@@ -20,7 +20,8 @@ It is built directly on top of the
 and their one-round descent theorem — see [README-GNNW.md](README-GNNW.md).
 The **only change to their code** is the relaxation of one identity
 (`X = …`) to an inequality (`X ≤ …`) in `RamseyLean/Descent.lean`, whose
-proof already used only the inequality.
+proof already used only the inequality (plus the corresponding `.le` at its
+two call sites).
 
 ## The final theorems
 

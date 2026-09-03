@@ -16,3 +16,7 @@
 *.out
 *.synctex.gz
 *.toc
+
+# verification logs are part of the record
+!verification/*.log
+mathlib-cache.tar.zst.*

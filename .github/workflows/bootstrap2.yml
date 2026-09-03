@@ -1,0 +1,73 @@
+name: Bootstrap2 (spline certificate, kernel verification)
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "RamseyLean/Bootstrap2/**"
+      - "RamseyLean/SelfConsistent.lean"
+      - lakefile.toml
+      - lake-manifest.json
+      - lean-toolchain
+      - ".github/workflows/bootstrap2.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bootstrap2-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certmain:
+    name: kernel-verify 35,770-cell certificate + axiom audit
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Verify fresh checkout
+        run: |
+          test ! -e .lake
+          test -z "$(git status --porcelain)"
+
+      - name: Set up Lean and the Mathlib cache
+        uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          build: false
+          use-mathlib-cache: true
+          use-github-cache: false
+
+      - name: Build the framework (through Main2)
+        run: lake build RamseyLean.Bootstrap2.Main2
+
+      - name: Kernel-check the 559 certificate chunks (batched, 3 at a time)
+        # A chunk's kernel check needs ~2 GB; the 16 GB runner cannot run
+        # lake's default one-job-per-core on these targets. Passing 3 chunk
+        # targets per lake invocation caps concurrency at 3.
+        run: |
+          for i in $(seq 1 3 559); do
+            t=""
+            for j in $i $((i+1)) $((i+2)); do
+              [ "$j" -le 559 ] && t="$t +RamseyLean.Bootstrap2.CertData2.Chunk$(printf '%03d' "$j")"
+            done
+            lake build $t || exit 1
+          done
+
+      - name: Assemble and build RamseyLean.Bootstrap2.CertMain
+        run: lake build RamseyLean.Bootstrap2.CertMain
+
+      - name: Axiom audit of the final theorems
+        run: |
+          cat > /tmp/axprobe.lean <<'EOF'
+          import RamseyLean.Bootstrap2.CertMain
+          #print axioms RamseyLean.Bootstrap2.main_bootstrap2
+          #print axioms RamseyLean.Bootstrap2.bootstrap2_diagonal
+          #print axioms RamseyLean.Bootstrap2.bootstrap2_diagonal_num
+          EOF
+          lake env lean /tmp/axprobe.lean | tee /tmp/axioms.txt
+          grep -c "propext, Classical.choice, Quot.sound" /tmp/axioms.txt | grep -q '^3$'
+          ! grep -qiE "sorry|native_decide" /tmp/axioms.txt

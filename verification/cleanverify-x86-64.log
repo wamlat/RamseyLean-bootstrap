@@ -1,0 +1,67 @@
+== CLEAN-CLONE VERIFICATION Thu Sep  3 05:26:55 UTC 2026
+== host: Linux ip-172-31-37-28 6.8.0-1063-aws #66~22.04.1-Ubuntu SMP Fri Aug  7 17:45:18 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+== commit: 23572c09b53e468e03d2de2213b2ab038ecbf0c4
+== toolchain: leanprover/lean4:v4.32.1
+info: mathlib: cloning https://github.com/leanprover-community/mathlib4
+info: mathlib: checking out revision '520045ab14e26149ee970e2e617ca04b09bde5d6'
+info: plausible: cloning https://github.com/leanprover-community/plausible
+info: plausible: checking out revision 'e12c1910fe855cbfc38803cd4e55543906d5fa62'
+info: LeanSearchClient: cloning https://github.com/leanprover-community/LeanSearchClient
+info: LeanSearchClient: checking out revision 'c5d5b8fe6e5158def25cd28eb94e4141ad97c843'
+info: importGraph: cloning https://github.com/leanprover-community/import-graph
+info: importGraph: checking out revision '7e9612bf0b9ee66db3cb5b9988a35afc706f5a12'
+info: proofwidgets: cloning https://github.com/leanprover-community/ProofWidgets4
+info: proofwidgets: checking out revision '6e311e2a844da9b2cc3971187df2fe0066947b93'
+info: aesop: cloning https://github.com/leanprover-community/aesop
+info: aesop: checking out revision 'a7dbf0c63b694e47f425f3dcddbc0e178bb432d3'
+info: Qq: cloning https://github.com/leanprover-community/quote4
+info: Qq: checking out revision '38d591e778f100aec9762bb582f9c7f55f50e9dc'
+info: batteries: cloning https://github.com/leanprover-community/batteries
+info: batteries: checking out revision '023ce7d62a0531e22a5331e20b587817a80d49ff'
+info: Cli: cloning https://github.com/leanprover/lean4-cli
+info: Cli: checking out revision '88679d088c9720c27ebdf2ba4dafe17341747f94'
+✔ [5/27] Built Cache.Cli (257ms)
+✔ [6/27] Built Cache.Lean (302ms)
+✔ [7/27] Built Cache.Cli:c.o (103ms)
+✔ [8/27] Built Cache.Infra (301ms)
+✔ [9/27] Built Cache.Lean:c.o (114ms)
+✔ [10/27] Built Cache.Infra:c.o (158ms)
+✔ [11/27] Built Batteries.Tactic.OpenPrivate (670ms)
+✔ [12/27] Built Batteries.Tactic.OpenPrivate:c.o (867ms)
+✔ [13/27] Built Cache.IO (1.0s)
+✔ [14/27] Built Cache.Hashing (622ms)
+✔ [15/27] Built Cache.Hashing:c.o (324ms)
+✔ [16/27] Built Cache.IO:c.o (1.1s)
+✔ [17/27] Built Cache.Requests (1.5s)
+✔ [18/27] Built Cache.Marker (479ms)
+✔ [19/27] Built Cache.Marker:c.o (93ms)
+✔ [20/27] Built Cache.Query (555ms)
+✔ [21/27] Built Cache.Query:c.o (220ms)
+✔ [22/27] Built Cache.Warning (543ms)
+✔ [23/27] Built Cache.Warning:c.o (191ms)
+✔ [24/27] Built Cache.Requests:c.o (1.0s)
+✔ [25/27] Built Cache.Main (1.2s)
+✔ [26/27] Built Cache.Main:c.o (692ms)
+✔ [27/27] Built cache:exe (659ms)
+
+real	0m52.687s
+user	1m29.342s
+sys	0m51.284s
+== lake build RamseyLean.Bootstrap2.CertMain
+✔ [3986/3992] Built RamseyLean.Bootstrap2.CertData2.Chunk005 (37s)
+✔ [3987/3992] Built RamseyLean.Bootstrap2.CertData2.Chunk004 (37s)
+✔ [3988/3992] Built RamseyLean.Bootstrap2.CertData2.Chunk003 (37s)
+✔ [3989/3992] Built RamseyLean.Bootstrap2.CertData2.Chunk002 (37s)
+✔ [3990/3992] Built RamseyLean.Bootstrap2.CertData2.Chunk001 (37s)
+✔ [3991/3992] Built RamseyLean.Bootstrap2.CertData2.CertData2 (119s)
+✔ [3992/3992] Built RamseyLean.Bootstrap2.CertMain (73s)
+Build completed successfully (3992 jobs).
+
+real	26m56.284s
+user	352m57.394s
+sys	11m5.684s
+== axiom audit
+'RamseyLean.Bootstrap2.main_bootstrap2' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RamseyLean.Bootstrap2.bootstrap2_diagonal' depends on axioms: [propext, Classical.choice, Quot.sound]
+'RamseyLean.Bootstrap2.bootstrap2_diagonal_num' depends on axioms: [propext, Classical.choice, Quot.sound]
+== CLEAN-DONE Thu Sep  3 05:54:47 UTC 2026
